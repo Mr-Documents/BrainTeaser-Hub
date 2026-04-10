@@ -198,6 +198,17 @@ app.use((err, req, res, next) => {
   fail(res, 500, 'Server error');
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Brain Teaser Hub http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(
+      `Port ${PORT} is already in use. Stop the other process or run with a different port, e.g. set PORT=3001`
+    );
+  } else {
+    console.error(err);
+  }
+  process.exit(1);
 });
