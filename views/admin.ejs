@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Puzzles</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Puzzle admin</h1>
+    <p class="tagline">Create, update, or delete puzzles (stored in <code>data/puzzles.json</code>).</p>
+    <nav class="nav-links"><a href="/">← Back to hub</a></nav>
+  </header>
+
+  <main class="admin-main">
+    <section class="panel admin-form-panel">
+      <h2 id="form-title">Add puzzle</h2>
+      <form id="puzzle-form" class="admin-form">
+        <input type="hidden" id="f-mode" value="create" />
+        <label>ID <input type="text" id="f-id" required placeholder="unique-id" /></label>
+        <label>Question <textarea id="f-question" rows="3" required></textarea></label>
+        <label>Type
+          <select id="f-type">
+            <option value="logic">logic</option>
+            <option value="math">math</option>
+            <option value="word">word</option>
+          </select>
+        </label>
+        <label>Difficulty
+          <select id="f-difficulty">
+            <option value="easy">easy</option>
+            <option value="medium">medium</option>
+            <option value="hard">hard</option>
+          </select>
+        </label>
+        <label>Match mode
+          <select id="f-matchMode">
+            <option value="exact">exact</option>
+            <option value="partial">partial</option>
+            <option value="regex">regex</option>
+          </select>
+        </label>
+        <label>Answers (one per line) <textarea id="f-answers" rows="3" required placeholder="answer one&#10;answer two"></textarea></label>
+        <label>Hints (one per line, optional) <textarea id="f-hints" rows="3" placeholder="hint one"></textarea></label>
+        <label>Base points <input type="number" id="f-basePoints" value="100" min="0" /></label>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
+          <button type="button" class="btn btn-secondary hidden" id="btn-cancel-edit">Cancel edit</button>
+        </div>
+        <p id="admin-msg" class="feedback" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Existing puzzles</h2>
+      <ul class="puzzle-list" id="puzzle-list">
+        <% puzzles.forEach(function (p) { %>
+          <li data-id="<%= p.id %>">
+            <strong><%= p.id %></strong> — <%= p.type %> / <%= p.difficulty %>
+            <span class="list-q"><%= p.question.slice(0, 80) %><%= p.question.length > 80 ? '…' : '' %></span>
+            <button type="button" class="btn btn-small btn-edit" data-id="<%= p.id %>">Edit</button>
+            <button type="button" class="btn btn-small btn-danger btn-delete" data-id="<%= p.id %>">Delete</button>
+          </li>
+        <% }); %>
+      </ul>
+    </section>
+  </main>
+
+  <script id="puzzles-json" type="application/json"><%- JSON.stringify(puzzles) %></script>
+  <script>
+    const PUZZLES = JSON.parse(document.getElementById('puzzles-json').textContent);
+    const byId = Object.fromEntries(PUZZLES.map((p) => [p.id, p]));
+
+    const form = document.getElementById('puzzle-form');
+    const msg = document.getElementById('admin-msg');
+    const modeInput = document.getElementById('f-mode');
+    const formTitle = document.getElementById('form-title');
+    const btnCancel = document.getElementById('btn-cancel-edit');
+    const fId = document.getElementById('f-id');
+
+    function linesToArray(el) {
+      return el.value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+    }
+
+    function arrayToLines(arr) {
+      return (arr || []).join('\n');
+    }
+
+    function showMessage(text, ok) {
+      msg.textContent = text;
+      msg.classList.toggle('feedback-error', !ok);
+      msg.classList.toggle('feedback-success', ok);
+    }
+
+    function setCreateMode() {
+      modeInput.value = 'create';
+      formTitle.textContent = 'Add puzzle';
+      form.reset();
+      document.getElementById('f-basePoints').value = '100';
+      fId.removeAttribute('readonly');
+      btnCancel.classList.add('hidden');
+    }
+
+    function setEditMode(p) {
+      modeInput.value = 'edit';
+      formTitle.textContent = 'Edit puzzle';
+      fId.value = p.id;
+      fId.setAttribute('readonly', 'readonly');
+      document.getElementById('f-question').value = p.question || '';
+      document.getElementById('f-type').value = p.type || 'logic';
+      document.getElementById('f-difficulty').value = p.difficulty || 'medium';
+      document.getElementById('f-matchMode').value = p.matchMode || 'exact';
+      document.getElementById('f-answers').value = arrayToLines(p.answers);
+      document.getElementById('f-hints').value = arrayToLines(p.hints);
+      document.getElementById('f-basePoints').value = String(p.basePoints ?? 100);
+      btnCancel.classList.remove('hidden');
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    btnCancel.addEventListener('click', setCreateMode);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = fId.value.trim();
+      const body = {
+        id,
+        question: document.getElementById('f-question').value.trim(),
+        type: document.getElementById('f-type').value,
+        difficulty: document.getElementById('f-difficulty').value,
+        matchMode: document.getElementById('f-matchMode').value,
+        answers: linesToArray(document.getElementById('f-answers')),
+        hints: linesToArray(document.getElementById('f-hints')),
+        basePoints: Number(document.getElementById('f-basePoints').value) || 0,
+      };
+      if (!body.answers.length) {
+        showMessage('Add at least one answer line.', false);
+        return;
+      }
+      try {
+        if (modeInput.value === 'edit') {
+          await axios.put('/api/puzzles/' + encodeURIComponent(id), body);
+          showMessage('Updated puzzle ' + id, true);
+        } else {
+          await axios.post('/api/puzzles', body);
+          showMessage('Created puzzle ' + id, true);
+        }
+        location.reload();
+      } catch (err) {
+        showMessage(err.response?.data?.error || err.message, false);
+      }
+    });
+
+    document.getElementById('puzzle-list').addEventListener('click', async (e) => {
+      const del = e.target.closest('.btn-delete');
+      const edit = e.target.closest('.btn-edit');
+      if (del) {
+        const id = del.getAttribute('data-id');
+        if (!confirm('Delete puzzle ' + id + '?')) return;
+        try {
+          await axios.delete('/api/puzzles/' + encodeURIComponent(id));
+          location.reload();
+        } catch (err) {
+          showMessage(err.response?.data?.error || err.message, false);
+        }
+      }
+      if (edit) {
+        const id = edit.getAttribute('data-id');
+        const p = byId[id];
+        if (p) setEditMode(p);
+      }
+    });
+
+    if (window.location.hash && window.location.hash.startsWith('#edit-')) {
+      const id = window.location.hash.slice(6);
+      if (byId[id]) setEditMode(byId[id]);
+    }
+  </script>
+</body>
+</html>

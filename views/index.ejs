@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brain Teaser Hub</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Brain Teaser Hub</h1>
+    <p class="tagline">Solve puzzles, climb the leaderboard, watch the stats grow.</p>
+    <nav class="nav-links">
+      <a href="/admin">Admin (CRUD puzzles)</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel puzzle-panel" aria-labelledby="puzzle-heading">
+      <h2 id="puzzle-heading">Current puzzle</h2>
+
+      <div class="filters">
+        <label>
+          Type
+          <select id="filter-type">
+            <option value="">Any</option>
+            <option value="logic">Logic</option>
+            <option value="math">Math</option>
+            <option value="word">Word</option>
+          </select>
+        </label>
+        <label>
+          Difficulty
+          <select id="filter-difficulty">
+            <option value="">Any</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-secondary" id="btn-reset-seen" title="Show puzzles you may have seen again">Reset seen</button>
+      </div>
+
+      <article class="puzzle-card" id="puzzle-card">
+        <p class="puzzle-loading" id="puzzle-loading">Loading a puzzle…</p>
+        <div class="puzzle-body hidden" id="puzzle-body">
+          <div class="badges">
+            <span class="badge badge-type" id="badge-type" data-tooltip="Logic: deduction and riddles. Math: numbers and patterns. Word: language twists.">—</span>
+            <span class="badge badge-difficulty" id="badge-difficulty" data-tooltip="Easy: quick wins. Medium: think a bit. Hard: bring coffee.">—</span>
+            <span class="badge badge-points" id="badge-points">— pts</span>
+          </div>
+          <p class="puzzle-question" id="puzzle-question"></p>
+          <div class="hint-stack" id="hint-stack" aria-live="polite"></div>
+          <div class="answer-row">
+            <label class="sr-only" for="answer-input">Your answer</label>
+            <input type="text" id="answer-input" autocomplete="off" placeholder="Type your answer" />
+            <button type="button" class="btn btn-primary" id="btn-submit">Submit</button>
+          </div>
+          <div class="actions-row">
+            <button type="button" class="btn btn-hint hidden" id="btn-hint" title="Each hint reduces your score">
+              <span class="hint-icon" aria-hidden="true">?</span> Hint
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-new">New puzzle</button>
+          </div>
+          <p class="feedback" id="feedback" role="status"></p>
+        </div>
+      </article>
+
+      <div class="username-row">
+        <label for="username">Display name (leaderboard)</label>
+        <input type="text" id="username" maxlength="32" placeholder="Anonymous" />
+      </div>
+    </section>
+
+    <aside class="panel side-panel">
+      <section class="leaderboard-block" aria-labelledby="lb-heading">
+        <h2 id="lb-heading">Leaderboard</h2>
+        <table class="leaderboard">
+          <thead>
+            <tr><th>#</th><th>Player</th><th>Score</th></tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <% leaderboard.forEach(function (row, i) { %>
+              <tr class="<%= i === 0 ? 'top-rank' : '' %>">
+                <td><%= i + 1 %></td>
+                <td><%= row.username %></td>
+                <td><%= row.totalScore %></td>
+              </tr>
+            <% }); %>
+            <% if (!leaderboard.length) { %>
+              <tr><td colspan="3">No scores yet — be first!</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="stats-block" aria-labelledby="stats-heading">
+        <h2 id="stats-heading">Completion stats</h2>
+        <div class="charts">
+          <div class="chart-wrap">
+            <h3>By type</h3>
+            <canvas id="chart-type" width="280" height="200"></canvas>
+          </div>
+          <div class="chart-wrap">
+            <h3>By difficulty</h3>
+            <canvas id="chart-difficulty" width="280" height="200"></canvas>
+          </div>
+          <div class="chart-wrap chart-wide">
+            <h3>Correct vs wrong guesses (global)</h3>
+            <canvas id="chart-guess" width="400" height="180"></canvas>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script id="initial-stats" type="application/json"><%- JSON.stringify(stats) %></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

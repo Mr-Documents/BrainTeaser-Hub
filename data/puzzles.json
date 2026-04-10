@@ -1,0 +1,145 @@
+{
+  "puzzles": [
+    {
+      "id": "p1",
+      "question": "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?",
+      "type": "logic",
+      "difficulty": "easy",
+      "answers": ["echo"],
+      "matchMode": "exact",
+      "hints": [],
+      "basePoints": 100
+    },
+    {
+      "id": "p2",
+      "question": "What has keys but can't open locks?",
+      "type": "word",
+      "difficulty": "easy",
+      "answers": ["piano", "keyboard", "a piano", "a keyboard"],
+      "matchMode": "exact",
+      "hints": [],
+      "basePoints": 80
+    },
+    {
+      "id": "p3",
+      "question": "If you multiply me by myself, you get 64. What positive number am I?",
+      "type": "math",
+      "difficulty": "easy",
+      "answers": ["8"],
+      "matchMode": "exact",
+      "hints": [],
+      "basePoints": 70
+    },
+    {
+      "id": "p4",
+      "question": "Rearrange the letters of LISTEN to form a word that means quiet.",
+      "type": "word",
+      "difficulty": "medium",
+      "answers": ["silent"],
+      "matchMode": "exact",
+      "hints": [
+        "It is an adjective describing absence of sound.",
+        "The word starts with S and has six letters."
+      ],
+      "basePoints": 120
+    },
+    {
+      "id": "p5",
+      "question": "A farmer has 17 sheep. All but 9 run away. How many are left?",
+      "type": "logic",
+      "difficulty": "medium",
+      "answers": ["9"],
+      "matchMode": "exact",
+      "hints": [
+        "Read the phrase 'all but nine' carefully.",
+        "The answer is the number that did NOT run away."
+      ],
+      "basePoints": 110
+    },
+    {
+      "id": "p6",
+      "question": "What is the next number in the sequence: 2, 6, 12, 20, 30, ?",
+      "type": "math",
+      "difficulty": "medium",
+      "answers": ["42"],
+      "matchMode": "exact",
+      "hints": [
+        "Look at differences between consecutive terms.",
+        "Differences increase by 2 each time: +4, +6, +8, +10, then +12."
+      ],
+      "basePoints": 130
+    },
+    {
+      "id": "p7",
+      "question": "Complete the word: The study of birds is called orn_____y.",
+      "type": "word",
+      "difficulty": "hard",
+      "answers": ["ornithology"],
+      "matchMode": "partial",
+      "hints": [
+        "The missing part sounds like 'nih-thology'.",
+        "It starts with ornith- (Greek for bird)."
+      ],
+      "basePoints": 150
+    },
+    {
+      "id": "p8",
+      "question": "You see me once in June, twice in November, but not in May. What am I?",
+      "type": "logic",
+      "difficulty": "hard",
+      "answers": ["the letter e", "e", "letter e"],
+      "matchMode": "partial",
+      "hints": [
+        "Think about spelling, not the calendar season.",
+        "Count a specific letter in each month name."
+      ],
+      "basePoints": 140
+    },
+    {
+      "id": "p9",
+      "question": "Type a valid US ZIP: five digits, or five digits, a hyphen, then four digits (examples: 02139 or 10001-1234).",
+      "type": "logic",
+      "difficulty": "hard",
+      "answers": ["^\\d{5}(-\\d{4})?$"],
+      "matchMode": "regex",
+      "hints": [
+        "Only digits and one optional hyphen in the middle.",
+        "Try copying an example from the prompt and changing the numbers."
+      ],
+      "basePoints": 90
+    },
+    {
+      "id": "p10",
+      "question": "If a shirt costs $97 and you pay with $100, how many cents is your change?",
+      "type": "math",
+      "difficulty": "easy",
+      "answers": ["300", "300 cents", "3 dollars"],
+      "matchMode": "partial",
+      "hints": [],
+      "basePoints": 60
+    },
+    {
+      "id": "p11",
+      "question": "What is 15% of 200?",
+      "type": "math",
+      "difficulty": "easy",
+      "answers": ["30"],
+      "matchMode": "exact",
+      "hints": [],
+      "basePoints": 50
+    },
+    {
+      "id": "p12",
+      "question": "Forward I am heavy, backward I am not. What word am I?",
+      "type": "word",
+      "difficulty": "hard",
+      "answers": ["ton"],
+      "matchMode": "exact",
+      "hints": [
+        "The word is three letters.",
+        "Backward it spells a common negative word."
+      ],
+      "basePoints": 160
+    }
+  ]
+}
