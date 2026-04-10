@@ -64,6 +64,12 @@
     const ctx2 = document.getElementById('chart-difficulty');
     const ctx3 = document.getElementById('chart-guess');
 
+    const commonOpts = {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 4, right: 4, bottom: 4, left: 4 } },
+    };
+
     chartType = new Chart(ctx1, {
       type: 'pie',
       data: {
@@ -77,8 +83,17 @@
         ],
       },
       options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } },
+        ...commonOpts,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 10,
+              font: { size: window.matchMedia('(max-width: 480px)').matches ? 10 : 12 },
+            },
+          },
+        },
       },
     });
 
@@ -96,8 +111,11 @@
         ],
       },
       options: {
-        responsive: true,
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+        ...commonOpts,
+        scales: {
+          x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 11 } } },
+          y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        },
         plugins: { legend: { display: false } },
       },
     });
@@ -116,8 +134,11 @@
         ],
       },
       options: {
-        responsive: true,
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+        ...commonOpts,
+        scales: {
+          x: { ticks: { maxRotation: 30, font: { size: 10 } } },
+          y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        },
         plugins: { legend: { display: false } },
       },
     });

@@ -1,0 +1,27 @@
+<% var active = typeof navActive !== 'undefined' ? navActive : 'home'; %>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="navbar">
+  <div class="navbar-inner">
+    <a class="nav-brand" href="/">
+      <span class="nav-logo" aria-hidden="true">◈</span>
+      <span class="nav-brand-text">
+        <span class="nav-title">Brain Teaser Hub</span>
+        <span class="nav-sub">Logic · Math · Word</span>
+      </span>
+    </a>
+    <nav class="nav-menu" aria-label="Primary">
+      <a
+        href="/"
+        class="nav-item<%= active === 'home' ? ' is-active' : '' %>"
+        <%= active === 'home' ? 'aria-current="page"' : '' %>
+      >Play</a>
+      <a href="/#leaderboard" class="nav-item nav-item--ghost">Leaderboard</a>
+      <a href="/#stats-heading" class="nav-item nav-item--ghost">Stats</a>
+      <a
+        href="/admin"
+        class="nav-item<%= active === 'admin' ? ' is-active' : '' %>"
+        <%= active === 'admin' ? 'aria-current="page"' : '' %>
+      >Manage puzzles</a>
+    </nav>
+  </div>
+</header>

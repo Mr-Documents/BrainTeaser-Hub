@@ -2,22 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brain Teaser Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Solve logic, math, and word brain teasers in the browser. Instant feedback, hints, leaderboard, and completion stats." />
+  <meta name="theme-color" content="#1a2332" />
+  <title><%= pageTitle || 'Brain Teaser Hub' %></title>
   <link rel="stylesheet" href="/css/main.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
 </head>
 <body>
-  <header class="site-header">
-    <h1>Brain Teaser Hub</h1>
-    <p class="tagline">Solve puzzles, climb the leaderboard, watch the stats grow.</p>
-    <nav class="nav-links">
-      <a href="/admin">Admin (CRUD puzzles)</a>
-    </nav>
-  </header>
+  <%- include('partials/navbar', { navActive: navActive || 'home' }) %>
 
-  <main class="layout">
+  <main class="layout" id="main-content">
     <section class="panel puzzle-panel" aria-labelledby="puzzle-heading">
       <h2 id="puzzle-heading">Current puzzle</h2>
 
@@ -70,13 +66,14 @@
 
       <div class="username-row">
         <label for="username">Display name (leaderboard)</label>
-        <input type="text" id="username" maxlength="32" placeholder="Anonymous" />
+        <input type="text" id="username" maxlength="32" placeholder="Anonymous" autocomplete="nickname" />
       </div>
     </section>
 
     <aside class="panel side-panel">
-      <section class="leaderboard-block" aria-labelledby="lb-heading">
+      <section class="leaderboard-block" id="leaderboard" aria-labelledby="lb-heading" tabindex="-1">
         <h2 id="lb-heading">Leaderboard</h2>
+        <div class="leaderboard-scroll">
         <table class="leaderboard">
           <thead>
             <tr><th>#</th><th>Player</th><th>Score</th></tr>
@@ -94,6 +91,7 @@
             <% } %>
           </tbody>
         </table>
+        </div>
       </section>
 
       <section class="stats-block" aria-labelledby="stats-heading">
@@ -101,20 +99,22 @@
         <div class="charts">
           <div class="chart-wrap">
             <h3>By type</h3>
-            <canvas id="chart-type" width="280" height="200"></canvas>
+            <div class="chart-canvas-host chart-canvas-host--pie"><canvas id="chart-type"></canvas></div>
           </div>
           <div class="chart-wrap">
             <h3>By difficulty</h3>
-            <canvas id="chart-difficulty" width="280" height="200"></canvas>
+            <div class="chart-canvas-host"><canvas id="chart-difficulty"></canvas></div>
           </div>
           <div class="chart-wrap chart-wide">
             <h3>Correct vs wrong guesses (global)</h3>
-            <canvas id="chart-guess" width="400" height="180"></canvas>
+            <div class="chart-canvas-host chart-canvas-host--wide"><canvas id="chart-guess"></canvas></div>
           </div>
         </div>
       </section>
     </aside>
   </main>
+
+  <%- include('partials/footer') %>
 
   <script id="initial-stats" type="application/json"><%- JSON.stringify(stats) %></script>
   <script src="/js/app.js"></script>

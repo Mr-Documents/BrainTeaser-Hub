@@ -2,17 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — Puzzles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Manage brain teaser puzzles: create, edit, and delete entries stored in JSON." />
+  <meta name="theme-color" content="#1a2332" />
+  <title><%= pageTitle || 'Admin · Brain Teaser Hub' %></title>
   <link rel="stylesheet" href="/css/main.css" />
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
 </head>
 <body>
-  <header class="site-header">
-    <h1>Puzzle admin</h1>
-    <p class="tagline">Create, update, or delete puzzles (stored in <code>data/puzzles.json</code>).</p>
-    <nav class="nav-links"><a href="/">← Back to hub</a></nav>
-  </header>
+  <%- include('partials/navbar', { navActive: navActive || 'admin' }) %>
+
+  <div class="page-hero page-hero--admin" id="main-content">
+    <div class="page-hero-inner">
+      <h1 class="page-hero-title">Puzzle administration</h1>
+      <p class="page-hero-lede">Create, update, or remove challenges. Changes are saved to <code>data/puzzles.json</code>.</p>
+    </div>
+  </div>
 
   <main class="admin-main">
     <section class="panel admin-form-panel">
@@ -67,6 +72,8 @@
       </ul>
     </section>
   </main>
+
+  <%- include('partials/footer') %>
 
   <script id="puzzles-json" type="application/json"><%- JSON.stringify(puzzles) %></script>
   <script>

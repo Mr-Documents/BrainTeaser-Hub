@@ -30,12 +30,17 @@ function findPuzzleById(id) {
 app.get('/', (req, res) => {
   const leaderboard = store.getLeaderboard(10);
   const stats = store.readStats();
-  res.render('index', { leaderboard, stats });
+  res.render('index', {
+    leaderboard,
+    stats,
+    navActive: 'home',
+    pageTitle: 'Brain Teaser Hub',
+  });
 });
 
 app.get('/admin', (req, res) => {
   const puzzles = store.readPuzzles();
-  res.render('admin', { puzzles });
+  res.render('admin', { puzzles, navActive: 'admin', pageTitle: 'Admin · Brain Teaser Hub' });
 });
 
 app.get('/api/puzzles/random', (req, res) => {
