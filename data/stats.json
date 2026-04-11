@@ -1,17 +1,17 @@
 {
   "completionsByType": {
-    "logic": 0,
+    "logic": 2,
     "math": 0,
-    "word": 1
+    "word": 2
   },
   "completionsByDifficulty": {
     "easy": 1,
-    "medium": 0,
-    "hard": 0
+    "medium": 2,
+    "hard": 1
   },
-  "totalSolves": 1,
+  "totalSolves": 4,
   "correctVsWrong": {
-    "correct": 1,
-    "wrong": 1
+    "correct": 4,
+    "wrong": 8
   }
 }

@@ -1,6 +1,10 @@
 {
   "entries": [
     {
+      "username": "Anonymous",
+      "totalScore": 450
+    },
+    {
       "username": "Alex",
       "totalScore": 420
     },
@@ -11,10 +15,6 @@
     {
       "username": "Jordan",
       "totalScore": 205
-    },
-    {
-      "username": "Anonymous",
-      "totalScore": 80
     }
   ]
 }
