@@ -12,6 +12,8 @@
   const btnSubmit = el('btn-submit');
   const btnHint = el('btn-hint');
   const btnNew = el('btn-new');
+  const btnShareChallenge = el('btn-share-challenge');
+  const shareFeedback = el('share-feedback');
   const btnResetSeen = el('btn-reset-seen');
   const feedback = el('feedback');
   const filterType = el('filter-type');
@@ -22,6 +24,23 @@
   let currentPuzzle = null;
   let attemptToken = null;
   const seenIds = [];
+
+  function readPageConfig() {
+    const node = document.getElementById('page-config');
+    if (!node) return { challengePuzzleId: null, isChallengeRoute: false };
+    try {
+      const raw = JSON.parse(node.textContent);
+      return {
+        challengePuzzleId: raw.challengePuzzleId || null,
+        isChallengeRoute: !!raw.isChallengeRoute,
+      };
+    } catch {
+      return { challengePuzzleId: null, isChallengeRoute: false };
+    }
+  }
+
+  const pageConfig = readPageConfig();
+  const isChallengeRoute = pageConfig.isChallengeRoute;
 
   const typeLabels = { logic: 'Logic', math: 'Math', word: 'Word' };
   const diffLabels = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
@@ -198,14 +217,47 @@
     if (kind === 'wrong') card.classList.add('state-wrong');
   }
 
-  async function loadPuzzle() {
+  function revealPuzzle(puzzle, token) {
+    currentPuzzle = puzzle;
+    attemptToken = token;
+    if (puzzle && puzzle.id && !seenIds.includes(puzzle.id)) seenIds.push(puzzle.id);
+
+    badgeType.textContent = typeLabels[puzzle.type] || puzzle.type;
+    badgeDifficulty.textContent = diffLabels[puzzle.difficulty] || puzzle.difficulty;
+    badgePoints.textContent = (puzzle.basePoints || 0) + ' pts';
+    puzzleQuestion.textContent = puzzle.question;
+
+    if (puzzle.hasHints) {
+      btnHint.classList.remove('hidden');
+      btnHint.classList.add('hint-pulse');
+    } else {
+      btnHint.classList.add('hidden');
+      btnHint.classList.remove('hint-pulse');
+    }
+
+    puzzleLoading.classList.add('hidden');
+    puzzleBody.classList.remove('hidden');
+    btnShareChallenge.classList.remove('hidden');
+    shareFeedback.classList.add('hidden');
+    shareFeedback.textContent = '';
+    answerInput.focus();
+  }
+
+  function beginPuzzleLoad() {
     clearFeedback();
     applyPuzzleCardState(null);
     puzzleLoading.textContent = 'Loading a puzzle…';
     puzzleLoading.classList.remove('hidden');
     puzzleBody.classList.add('hidden');
+    btnShareChallenge.classList.add('hidden');
+    shareFeedback.classList.add('hidden');
+    shareFeedback.textContent = '';
     hintStack.innerHTML = '';
     answerInput.value = '';
+  }
+
+  async function loadPuzzle() {
+    beginPuzzleLoad();
 
     const params = new URLSearchParams();
     const t = filterType.value;
@@ -217,30 +269,37 @@
     try {
       const { data } = await axios.get('/api/puzzles/random?' + params.toString());
       if (!data.ok) throw new Error(data.error || 'Failed');
-      currentPuzzle = data.data.puzzle;
-      attemptToken = data.data.attemptToken;
-      seenIds.push(currentPuzzle.id);
-
-      badgeType.textContent = typeLabels[currentPuzzle.type] || currentPuzzle.type;
-      badgeDifficulty.textContent = diffLabels[currentPuzzle.difficulty] || currentPuzzle.difficulty;
-      badgePoints.textContent = (currentPuzzle.basePoints || 0) + ' pts';
-      puzzleQuestion.textContent = currentPuzzle.question;
-
-      if (currentPuzzle.hasHints) {
-        btnHint.classList.remove('hidden');
-        btnHint.classList.add('hint-pulse');
-      } else {
-        btnHint.classList.add('hidden');
-        btnHint.classList.remove('hint-pulse');
-      }
-
-      puzzleLoading.classList.add('hidden');
-      puzzleBody.classList.remove('hidden');
-      answerInput.focus();
+      revealPuzzle(data.data.puzzle, data.data.attemptToken);
     } catch (err) {
       puzzleLoading.textContent = err.response?.data?.error || err.message || 'Could not load puzzle.';
       const hint = 'Try “Reset seen”, change filters, or add puzzles in Admin.';
       puzzleLoading.textContent += ' ' + hint;
+    }
+  }
+
+  async function loadPuzzleById(id) {
+    beginPuzzleLoad();
+    puzzleLoading.textContent = 'Loading challenge…';
+    try {
+      const { data } = await axios.get('/api/puzzles/' + encodeURIComponent(id));
+      if (!data.ok) throw new Error(data.error || 'Failed');
+      revealPuzzle(data.data.puzzle, data.data.attemptToken);
+    } catch (err) {
+      puzzleLoading.textContent = err.response?.data?.error || err.message || 'Could not load this puzzle.';
+      puzzleLoading.textContent += ' Try another link or go back to the home page.';
+    }
+  }
+
+  async function copyChallengeLink() {
+    if (!currentPuzzle || !currentPuzzle.id) return;
+    const url = new URL('/challenge/' + encodeURIComponent(currentPuzzle.id), window.location.origin).href;
+    try {
+      await navigator.clipboard.writeText(url);
+      shareFeedback.textContent = 'Challenge link copied — send it to a friend.';
+      shareFeedback.classList.remove('hidden');
+    } catch {
+      shareFeedback.textContent = url;
+      shareFeedback.classList.remove('hidden');
     }
   }
 
@@ -302,7 +361,14 @@
     if (e.key === 'Enter') submitAnswer();
   });
   btnHint.addEventListener('click', takeHint);
-  btnNew.addEventListener('click', loadPuzzle);
+  btnShareChallenge.addEventListener('click', copyChallengeLink);
+  btnNew.addEventListener('click', () => {
+    if (isChallengeRoute) {
+      window.location.href = '/';
+      return;
+    }
+    loadPuzzle();
+  });
   btnResetSeen.addEventListener('click', () => {
     seenIds.length = 0;
     loadPuzzle();
@@ -311,7 +377,11 @@
   const initial = readInitialStats();
   if (typeof Chart !== 'undefined' && initial) initCharts(initial);
 
-  loadPuzzle();
+  if (pageConfig.challengePuzzleId) {
+    loadPuzzleById(pageConfig.challengePuzzleId);
+  } else {
+    loadPuzzle();
+  }
 
   axios.get('/api/leaderboard?limit=10').then((res) => {
     if (res.data.ok) renderLeaderboard(res.data.data.entries);

@@ -35,6 +35,7 @@ app.get('/', (req, res) => {
     stats,
     navActive: 'home',
     pageTitle: 'Brain Teaser Hub',
+    challenge: null,
   });
 });
 
@@ -75,6 +76,42 @@ app.get('/api/puzzles/:id/hint', (req, res) => {
     return fail(res, 400, 'Invalid attempt token, or no more hints');
   }
   ok(res, { hint: next.text, step: next.step, total: next.total, hintsRevealed: next.step });
+});
+
+/** Start a play session for a specific puzzle (e.g. shared challenge link). */
+app.get('/api/puzzles/:id', (req, res) => {
+  const puzzle = findPuzzleById(req.params.id);
+  if (!puzzle) return fail(res, 404, 'Puzzle not found');
+  const attemptToken = attemptStore.createAttempt(puzzle.id);
+  ok(res, { puzzle: store.publicPuzzle(puzzle), attemptToken });
+});
+
+app.get('/challenge/:id', (req, res) => {
+  const id = String(req.params.id || '').trim();
+  if (!id) {
+    return res.status(404).render('not-found', {
+      navActive: 'home',
+      pageTitle: 'Challenge not found · Brain Teaser Hub',
+      message: 'That challenge link is missing a puzzle id.',
+    });
+  }
+  const puzzle = findPuzzleById(id);
+  if (!puzzle) {
+    return res.status(404).render('not-found', {
+      navActive: 'home',
+      pageTitle: 'Puzzle not found · Brain Teaser Hub',
+      message: 'There is no puzzle with that id. It may have been removed.',
+    });
+  }
+  const leaderboard = store.getLeaderboard(10);
+  const stats = store.readStats();
+  res.render('index', {
+    leaderboard,
+    stats,
+    navActive: 'home',
+    pageTitle: 'Challenge · Brain Teaser Hub',
+    challenge: { id: puzzle.id },
+  });
 });
 
 app.post('/api/submit', (req, res) => {

@@ -10,12 +10,18 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
 </head>
-<body>
+<body<% if (typeof challenge !== 'undefined' && challenge && challenge.id) { %> class="is-challenge-route"<% } %>>
   <%- include('partials/navbar', { navActive: navActive || 'home' }) %>
 
   <main class="layout" id="main-content">
     <section class="panel puzzle-panel" aria-labelledby="puzzle-heading">
       <h2 id="puzzle-heading">Current puzzle</h2>
+
+      <% if (typeof challenge !== 'undefined' && challenge && challenge.id) { %>
+      <p class="challenge-banner" role="status">
+        You’re solving a <strong>shared challenge</strong>. Send this puzzle to a friend with <strong>Copy challenge link</strong> below, or go back to <a href="/">random puzzles</a>.
+      </p>
+      <% } %>
 
       <div class="filters">
         <label>
@@ -59,7 +65,11 @@
               <span class="hint-icon" aria-hidden="true">?</span> Hint
             </button>
             <button type="button" class="btn btn-secondary" id="btn-new">New puzzle</button>
+            <button type="button" class="btn btn-secondary btn-share hidden" id="btn-share-challenge" title="Copy a link so others get this same puzzle">
+              Copy challenge link
+            </button>
           </div>
+          <p class="share-feedback hidden" id="share-feedback" role="status" aria-live="polite"></p>
           <p class="feedback" id="feedback" role="status"></p>
         </div>
       </article>
@@ -117,6 +127,10 @@
   <%- include('partials/footer') %>
 
   <script id="initial-stats" type="application/json"><%- JSON.stringify(stats) %></script>
+  <script id="page-config" type="application/json"><%- JSON.stringify({
+    challengePuzzleId: (typeof challenge !== 'undefined' && challenge && challenge.id) ? challenge.id : null,
+    isChallengeRoute: !!(typeof challenge !== 'undefined' && challenge && challenge.id),
+  }) %></script>
   <script src="/js/app.js"></script>
 </body>
 </html>

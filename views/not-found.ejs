@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title><%= pageTitle || 'Not found' %></title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <%- include('partials/navbar', { navActive: navActive || 'home' }) %>
+
+  <main class="layout layout--narrow" id="main-content">
+    <section class="panel not-found-panel">
+      <h1>Not found</h1>
+      <p class="not-found-message"><%= typeof message !== 'undefined' ? message : 'The page or puzzle you asked for does not exist.' %></p>
+      <p><a class="btn btn-primary" href="/">Back to play</a></p>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>
