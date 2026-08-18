@@ -11,7 +11,7 @@ const csvToArray = (value) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
-/** Accept a filter value only if it is one of the known options — anything else means "any". */
+/** Accept a filter value only if it is one of the known options - anything else means "any". */
 const oneOf = (value, allowed) => (allowed.includes(String(value)) ? String(value) : undefined);
 
 /**

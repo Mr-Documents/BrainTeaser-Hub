@@ -43,7 +43,7 @@
   }
 
   &--primary {
-    --btn-bg: linear-gradient(135deg, var(--indigo), #8b5cf6);
+    --btn-bg: var(--accent-gradient);
     --btn-ink: #fff;
     --btn-border: transparent;
     box-shadow: 0 6px 20px rgba(99, 102, 241, 0.28);
@@ -54,8 +54,10 @@
   }
 
   &--ghost {
+    // A button label is an action, not body copy - it reads at full ink strength.
+    // The hierarchy against a primary button comes from its fill and shadow.
     --btn-bg: transparent;
-    --btn-ink: var(--ink-muted);
+    --btn-ink: var(--ink);
 
     &:hover:not(:disabled) {
       --btn-ink: var(--ink-strong);
@@ -116,11 +118,12 @@
 
 // One rule per taxonomy value, generated from the token maps so a new puzzle
 // type only ever needs a colour added in _tokens.scss.
-@each $name, $color in map.merge($type-colors, $difficulty-colors) {
+@each $name, $hue in map.merge($type-colors, $difficulty-colors) {
   .badge--#{$name} {
-    color: #{$color};
-    background: color-mix(in srgb, #{$color} 16%, transparent);
-    border-color: color-mix(in srgb, #{$color} 34%, transparent);
+    // Text uses the -ink variant; the tint and border use the base hue.
+    color: var(--#{$hue}-ink);
+    background: color-mix(in srgb, var(--#{$hue}) 16%, transparent);
+    border-color: color-mix(in srgb, var(--#{$hue}) 34%, transparent);
   }
 }
 

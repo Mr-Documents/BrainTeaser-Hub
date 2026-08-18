@@ -34,7 +34,7 @@ npm run dev
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. **Project Settings → API**: copy the **Project URL** and the **`service_role`** key into `.env`.
-   The service-role key bypasses row level security and must stay server-side — never ship it to a
+   The service-role key bypasses row level security and must stay server-side - never ship it to a
    browser, never commit it.
 3. Apply the schema, either way:
    - **Dashboard**: SQL Editor → New query → paste [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) → Run.
@@ -62,7 +62,7 @@ data and nothing else.
 | `npm run format` / `format:check` | Prettier                                                       |
 | `npm run db:push`                 | Verify the Supabase schema                                     |
 | `npm run db:seed`                 | Import `data/puzzles.seed.json` (`--dry-run` to validate only) |
-| `npm run verify`                  | lint + build + test — what CI runs                             |
+| `npm run verify`                  | lint + build + test - what CI runs                             |
 
 ---
 
@@ -74,17 +74,17 @@ directly and exhaustively.
 
 ```
 src/
-├── domain/          Pure rules — no I/O, no framework. Deterministic and fully unit tested.
+├── domain/          Pure rules - no I/O, no framework. Deterministic and fully unit tested.
 │   ├── scoring.js         penalties, speed bonus, streak multiplier
 │   ├── answerMatcher.js   forgiving answer comparison (exact / partial / regex)
 │   ├── puzzlePicker.js    random + deterministic daily selection
 │   ├── puzzleSchema.js    zod validation and the public projection
 │   └── streak.js          daily streak arithmetic
 ├── repositories/    Storage behind one contract.
-│   ├── jsonRepository.js      files (default) — also the in-memory driver for tests
+│   ├── jsonRepository.js      files (default) - also the in-memory driver for tests
 │   └── supabaseRepository.js  Postgres via supabase-js
 ├── services/        Use cases: puzzleService, gameService, statsService
-├── http/            Express only — app factory, routes, middleware
+├── http/            Express only - app factory, routes, middleware
 └── server.js        Entry point: config validation, listen, graceful shutdown
 ```
 
@@ -106,12 +106,12 @@ src/
 ## Scoring
 
 ```
-earned = max(0, base − 15×hints − 10×wrongGuesses)
+earned = max(0, base - 15×hints - 10×wrongGuesses)
 total  = round((earned + speedBonus) × streakMultiplier)
 ```
 
-- **Speed bonus** — up to 25% of base under 20 seconds, tapering to zero at two minutes.
-- **Streak multiplier** — +5% per consecutive UTC day solved, capped at ×1.5.
+- **Speed bonus** - up to 25% of base under 20 seconds, tapering to zero at two minutes.
+- **Streak multiplier** - +5% per consecutive UTC day solved, capped at ×1.5.
 - Penalties apply **before** bonuses, so a heavily hinted solve can never out-earn a clean one.
 - A puzzle already solved in the current session scores zero.
 
@@ -124,7 +124,7 @@ and `8` matches `eight`.
 ## The puzzle studio (`/admin`)
 
 - Draft a puzzle with live character counts, an auto-derived slug and per-level point suggestions.
-- **Test the matcher** before saving — type what a player might submit and see it graded against
+- **Test the matcher** before saving - type what a player might submit and see it graded against
   the unsaved draft.
 - Search and filter the catalogue; edit, preview or delete inline.
 - Publish/draft toggle, bulk JSON import, and a re-importable export.
@@ -157,11 +157,11 @@ Every response uses one envelope: `{ ok: true, data }` or `{ ok: false, error, c
 
 ## Testing & CI
 
-137 tests across unit and integration, on Node's built-in runner — no Jest, no Vitest, no mocking
+137 tests across unit and integration, on Node's built-in runner - no Jest, no Vitest, no mocking
 library.
 
-- **Unit** — scoring maths, answer matching, puzzle selection, validation, streaks, attempt store.
-- **Integration** — the real Express app over HTTP via supertest: the full play loop, hint
+- **Unit** - scoring maths, answer matching, puzzle selection, validation, streaks, attempt store.
+- **Integration** - the real Express app over HTTP via supertest: the full play loop, hint
   sequencing, attempt-token forgery, admin auth and CRUD, page rendering, error shapes and
   security headers.
 
@@ -170,7 +170,7 @@ npm test
 ```
 
 CI (`.github/workflows/ci.yml`) runs lint, format check, an SCSS rebuild with a staleness check,
-catalogue validation and the suite on Node 20 and 22 — then boots the real server and probes it,
+catalogue validation and the suite on Node 20 and 22 - then boots the real server and probes it,
 and audits dependencies.
 
 ---

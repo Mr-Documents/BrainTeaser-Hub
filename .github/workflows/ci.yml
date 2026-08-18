@@ -74,7 +74,7 @@ jobs:
 
       - run: npm ci
 
-      # Proves the real entry point boots and serves traffic — not just that the app factory works.
+      # Proves the real entry point boots and serves traffic - not just that the app factory works.
       - name: Start the server and probe it
         env:
           PORT: '3000'

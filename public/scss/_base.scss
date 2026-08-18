@@ -60,12 +60,16 @@ p {
   text-wrap: pretty;
 }
 
-a {
+// Wrapped in :where() so these carry ZERO specificity. Without it,
+// `:root[data-theme] a` (0-2-1) outranks `.btn` (0-1-0) and repaints every
+// link-styled button in the link colour - which on a primary button meant
+// indigo text on an indigo gradient.
+:where(a) {
   color: var(--indigo-bright);
   text-underline-offset: 3px;
 }
 
-:root[data-theme='light'] a {
+:where(:root[data-theme='light'] a) {
   color: #4f46e5;
 }
 

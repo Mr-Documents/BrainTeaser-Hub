@@ -8,7 +8,7 @@ const { createSupabaseRepository } = require('./supabaseRepository');
  * Build the repository for the configured driver.
  *
  * Everything above this line (services, routes, views) is written against one contract, so
- * swapping storage is a config change — not a code change.
+ * swapping storage is a config change - not a code change.
  *
  * @param {object} [options]
  * @param {'supabase'|'json'|'memory'} [options.driver]

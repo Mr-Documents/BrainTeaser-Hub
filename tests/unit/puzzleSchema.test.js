@@ -78,12 +78,12 @@ test('the public projection never leaks answers, hints or the explanation', () =
   assert.equal(publicView.answers, undefined);
   assert.equal(publicView.hints, undefined);
   assert.equal(publicView.explanation, undefined);
-  assert.equal(publicView.hintCount, 2, 'the count is safe to expose — the text is not');
+  assert.equal(publicView.hintCount, 2, 'the count is safe to expose - the text is not');
   assert.equal(publicView.hasHints, true);
   assert.equal(publicView.question, puzzle.question);
 });
 
 test('slugify strips accents, punctuation and repeated separators', () => {
-  assert.equal(slugify('Café — the BEST puzzle!!'), 'cafe-the-best-puzzle');
+  assert.equal(slugify('Café - the BEST puzzle!!'), 'cafe-the-best-puzzle');
   assert.equal(slugify('  --already-a-slug--  '), 'already-a-slug');
 });

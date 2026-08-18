@@ -83,7 +83,7 @@
       try {
         window.localStorage.setItem(key, JSON.stringify(value));
       } catch {
-        /* quota or disabled storage — the feature is a nicety, not a requirement */
+        /* quota or disabled storage - the feature is a nicety, not a requirement */
       }
     },
   };

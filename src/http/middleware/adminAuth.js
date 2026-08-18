@@ -29,7 +29,7 @@ function parseCookies(header = '') {
 /**
  * Admin session handling.
  *
- * Auth is a single shared token (ADMIN_TOKEN) — right-sized for an MVP with one operator, and
+ * Auth is a single shared token (ADMIN_TOKEN) - right-sized for an MVP with one operator, and
  * swappable for Supabase Auth later without touching the routes. Presenting the token once
  * exchanges it for a signed, expiring cookie so it is not re-sent on every request.
  */
@@ -97,7 +97,7 @@ function createAdminAuth({ config, logger = console }) {
       return true;
     },
 
-    /** Guard for API routes — 401 JSON when unauthorized. */
+    /** Guard for API routes - 401 JSON when unauthorized. */
     requireApi() {
       return function requireAdminApi(req, res, next) {
         if (isAuthorized(req)) return next();
@@ -109,7 +109,7 @@ function createAdminAuth({ config, logger = console }) {
       };
     },
 
-    /** Guard for pages — redirect to the login screen instead of a raw 401. */
+    /** Guard for pages - redirect to the login screen instead of a raw 401. */
     requirePage() {
       return function requireAdminPage(req, res, next) {
         if (isAuthorized(req)) return next();

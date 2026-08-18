@@ -22,9 +22,9 @@ function nextStreak(player, now = new Date()) {
   if (Number.isNaN(lastDay)) return 1;
 
   const gap = today - lastDay;
-  if (gap <= 0) return Math.max(1, current); // already solved today — hold
-  if (gap === 1) return current + 1; // solved yesterday — extend
-  return 1; // missed a day — restart
+  if (gap <= 0) return Math.max(1, current); // already solved today - hold
+  if (gap === 1) return current + 1; // solved yesterday - extend
+  return 1; // missed a day - restart
 }
 
 /** True when the streak shown to a returning player has already lapsed. */

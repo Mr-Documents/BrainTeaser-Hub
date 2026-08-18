@@ -66,7 +66,7 @@
       const minutes = Math.floor(elapsed / 60);
       const seconds = String(elapsed % 60).padStart(2, '0');
       if (dom.timerValue) dom.timerValue.textContent = `${minutes}:${seconds}`;
-      // The speed bonus is gone after two minutes — dim the clock so it reads as spent.
+      // The speed bonus is gone after two minutes - dim the clock so it reads as spent.
       dom.timerValue?.parentElement?.classList.toggle('is-cold', elapsed >= 120);
       dom.timerValue?.parentElement?.classList.toggle('is-hot', elapsed < 20);
     }
@@ -144,7 +144,7 @@
   function renderLeaderboard(entries) {
     if (!dom.leaderboardBody) return;
     if (!entries || !entries.length) {
-      dom.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty">No scores yet — be first!</td></tr>';
+      dom.leaderboardBody.innerHTML = '<tr><td colspan="3" class="empty">No scores yet - be first!</td></tr>';
       return;
     }
     dom.leaderboardBody.innerHTML = entries
@@ -159,7 +159,7 @@
   function renderSession() {
     dom.sessionPoints.textContent = `${state.session.points} pts`;
     dom.sessionSolves.textContent = String(state.session.solves);
-    dom.sessionStreak.textContent = state.session.streak ? `${state.session.streak} 🔥` : '—';
+    dom.sessionStreak.textContent = state.session.streak ? `${state.session.streak} 🔥` : '-';
   }
 
   // -------------------------------------------------------------------- charts
@@ -319,7 +319,7 @@
   }
 
   function loadNext() {
-    // Daily and challenge modes have exactly one puzzle — "next" means going to the random pool.
+    // Daily and challenge modes have exactly one puzzle - "next" means going to the random pool.
     if (boot.mode === 'random') return loadRandom();
     window.location.href = '/play';
     return undefined;
@@ -426,7 +426,7 @@
         await navigator.share({ title: 'Brain Teaser Hub', text: 'Can you solve this one?', url });
         return;
       } catch {
-        /* the user dismissed the share sheet — fall through to copying */
+        /* the user dismissed the share sheet - fall through to copying */
       }
     }
     toast((await copyToClipboard(url)) ? 'Challenge link copied to your clipboard.' : url, 'info', 5000);
@@ -442,7 +442,7 @@
   dom.resetSeen?.addEventListener('click', () => {
     state.seen = [];
     storage.set(SEEN_KEY, []);
-    toast('Seen list cleared — every puzzle is back in the pool.', 'info');
+    toast('Seen list cleared - every puzzle is back in the pool.', 'info');
     loadRandom();
   });
 

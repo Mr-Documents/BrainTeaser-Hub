@@ -50,7 +50,7 @@ async function main() {
   }
 
   if (!config.data.hasSupabaseCreds) {
-    logger.warn('No SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY found — cannot check the remote schema.');
+    logger.warn('No SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY found - cannot check the remote schema.');
     logger.info('Copy .env.example to .env and fill in your project credentials, then re-run.');
     logger.info(`Migration to apply: ${path.relative(config.rootDir, MIGRATION)}`);
     return;

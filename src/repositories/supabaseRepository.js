@@ -55,7 +55,7 @@ const playerToCamel = (row) =>
 /**
  * Supabase (Postgres) implementation of the repository contract.
  *
- * Aggregates live in SQL — `record_attempt` is a single RPC so a solve is one atomic round trip
+ * Aggregates live in SQL - `record_attempt` is a single RPC so a solve is one atomic round trip
  * (player upsert + streak logic + attempt row), and stats read from views rather than pulling
  * every attempt row into Node.
  */
@@ -87,7 +87,7 @@ function createSupabaseRepository({ url, key, schema = 'public', logger = consol
     },
 
     async flush() {
-      /* writes are synchronous round trips — nothing to drain */
+      /* writes are synchronous round trips - nothing to drain */
     },
 
     // ---------------------------------------------------------------- puzzles

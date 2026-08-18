@@ -59,9 +59,9 @@
           <div class="puzzle__body" id="puzzle-body" hidden>
             <div class="puzzle__meta">
               <div class="badges">
-                <span class="badge" id="badge-type">—</span>
-                <span class="badge" id="badge-difficulty">—</span>
-                <span class="badge badge--points" id="badge-points">— pts</span>
+                <span class="badge" id="badge-type">-</span>
+                <span class="badge" id="badge-difficulty">-</span>
+                <span class="badge badge--points" id="badge-points">- pts</span>
               </div>
               <p class="timer" id="timer" title="Solve within 20 seconds for the full speed bonus">
                 <span class="timer__dot" aria-hidden="true"></span>
@@ -114,7 +114,7 @@
           <dl class="player-bar__stats">
             <div><dt>Session</dt><dd id="session-points">0 pts</dd></div>
             <div><dt>Solved</dt><dd id="session-solves">0</dd></div>
-            <div><dt>Streak</dt><dd id="session-streak">—</dd></div>
+            <div><dt>Streak</dt><dd id="session-streak">-</dd></div>
           </dl>
         </div>
 
@@ -143,7 +143,7 @@
                   </tr>
                 <% }); %>
                 <% if (!leaderboard.length) { %>
-                  <tr><td colspan="3" class="empty">No scores yet — be first!</td></tr>
+                  <tr><td colspan="3" class="empty">No scores yet - be first!</td></tr>
                 <% } %>
               </tbody>
             </table>

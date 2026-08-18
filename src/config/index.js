@@ -93,13 +93,13 @@ function validateConfig(cfg = config) {
     );
   }
   if (cfg.isProduction && cfg.admin.required && !cfg.admin.token) {
-    throw new Error('ADMIN_TOKEN must be set in production — admin routes would otherwise be unprotected.');
+    throw new Error('ADMIN_TOKEN must be set in production - admin routes would otherwise be unprotected.');
   }
   if (cfg.isProduction && cfg.data.driver === 'json') {
-    warnings.push('Running in production on the JSON file driver — data will not survive a redeploy.');
+    warnings.push('Running in production on the JSON file driver - data will not survive a redeploy.');
   }
   if (!cfg.isProduction && !cfg.admin.token) {
-    warnings.push('No ADMIN_TOKEN set — admin routes are open. Fine locally, never in production.');
+    warnings.push('No ADMIN_TOKEN set - admin routes are open. Fine locally, never in production.');
   }
   return warnings;
 }

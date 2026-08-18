@@ -24,7 +24,7 @@ function makePuzzle(overrides = {}) {
 }
 
 /**
- * Build an app wired to an in-memory repository — no files, no network, no shared state
+ * Build an app wired to an in-memory repository - no files, no network, no shared state
  * between tests. Returns the app plus the pieces a test may want to assert against.
  *
  * @param {object} [options]

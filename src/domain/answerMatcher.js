@@ -36,7 +36,7 @@ const NUMBER_WORDS = Object.freeze({
   thousand: '1000',
 });
 
-/** Nested quantifiers are the classic catastrophic-backtracking shape — refuse those patterns. */
+/** Nested quantifiers are the classic catastrophic-backtracking shape - refuse those patterns. */
 const RISKY_REGEX = /\([^)]*[+*][^)]*\)\s*[+*]|\[[^\]]*\]\s*[+*]\s*[+*]/;
 const MAX_REGEX_LENGTH = 200;
 
@@ -97,9 +97,9 @@ function matchRegex(raw, patterns) {
 /**
  * Compare a player's answer against a puzzle's accepted answers.
  *
- * - `exact`   — canonical equality (case, accents, punctuation, articles and number words are forgiving).
- * - `partial` — the accepted answer appears inside the submission (or vice-versa), on word boundaries.
- * - `regex`   — every accepted answer is treated as a case-insensitive pattern.
+ * - `exact`   - canonical equality (case, accents, punctuation, articles and number words are forgiving).
+ * - `partial` - the accepted answer appears inside the submission (or vice-versa), on word boundaries.
+ * - `regex`   - every accepted answer is treated as a case-insensitive pattern.
  *
  * @param {string} userAnswer
  * @param {{ answers?: string[], matchMode?: string }} puzzle

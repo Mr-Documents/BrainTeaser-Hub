@@ -99,7 +99,7 @@ function parsePuzzle(payload) {
   return result.data;
 }
 
-/** Same as parsePuzzle but returns a result object instead of throwing — used by the seed importer. */
+/** Same as parsePuzzle but returns a result object instead of throwing - used by the seed importer. */
 function safeParsePuzzle(payload) {
   const result = puzzleInputSchema.safeParse(payload);
   return result.success ? { ok: true, data: result.data } : { ok: false, issues: formatIssues(result.error) };

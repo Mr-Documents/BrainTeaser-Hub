@@ -1,5 +1,5 @@
 -- ============================================================================
--- Brain Teaser Hub — initial schema
+-- Brain Teaser Hub - initial schema
 --
 -- Apply with either:
 --   supabase db push                        (Supabase CLI, from the repo root)
@@ -29,7 +29,7 @@ create table if not exists public.puzzles (
   updated_at   timestamptz not null default now()
 );
 
-comment on table public.puzzles is 'The puzzle catalogue. `answers` and `hints` are secret — never expose them to the anon role.';
+comment on table public.puzzles is 'The puzzle catalogue. `answers` and `hints` are secret - never expose them to the anon role.';
 
 -- Serving a random puzzle filters on these three columns, so index them together.
 create index if not exists puzzles_published_type_difficulty_idx
@@ -153,7 +153,7 @@ create or replace view public.v_puzzles_public as
 -- ------------------------------------------------------------------------ RLS
 -- The server talks to Postgres with the service-role key, which bypasses RLS.
 -- These policies exist so that if the anon key is ever used (or a key leaks),
--- the worst case is reading public data — never reading answers or writing rows.
+-- the worst case is reading public data - never reading answers or writing rows.
 
 alter table public.puzzles  enable row level security;
 alter table public.players  enable row level security;

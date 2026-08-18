@@ -80,7 +80,7 @@ function createAdminApiRouter({ puzzleService, statsService, adminAuth }) {
     })
   );
 
-  /** Bulk import — the same shape `npm run db:seed` consumes, so a backup restores cleanly. */
+  /** Bulk import - the same shape `npm run db:seed` consumes, so a backup restores cleanly. */
   router.post(
     '/import',
     asyncHandler(async (req, res) => {

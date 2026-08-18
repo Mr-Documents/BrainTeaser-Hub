@@ -130,13 +130,13 @@ function buildLimiters(config) {
       ...common,
       windowMs: config.rateLimit.windowMs,
       limit: config.rateLimit.apiMax,
-      message: { ok: false, error: 'Too many requests — slow down a moment.', code: 'rate_limited' },
+      message: { ok: false, error: 'Too many requests - slow down a moment.', code: 'rate_limited' },
     }),
     submit: rateLimit({
       ...common,
       windowMs: config.rateLimit.windowMs,
       limit: config.rateLimit.submitMax,
-      message: { ok: false, error: 'Too many answers too fast — take a breath.', code: 'rate_limited' },
+      message: { ok: false, error: 'Too many answers too fast - take a breath.', code: 'rate_limited' },
     }),
   };
 }

@@ -6,7 +6,7 @@ const crypto = require('crypto');
  * Server-side play sessions.
  *
  * The client never receives the answers or the hint texts up front, so hint counts, wrong-guess
- * counts and solve timing cannot be forged by editing the page — they only exist here, keyed by
+ * counts and solve timing cannot be forged by editing the page - they only exist here, keyed by
  * an opaque token the server hands out with each puzzle.
  *
  * In-memory by design for the MVP (single instance). Swap this module for a Redis-backed one with

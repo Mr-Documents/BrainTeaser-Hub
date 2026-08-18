@@ -62,7 +62,7 @@ function computeScore({ basePoints, hintsRevealed = 0, wrongSubmissions = 0, dur
   const wrongPenalty = clampNonNegative(wrongSubmissions) * PENALTY_PER_WRONG;
   const afterPenalties = Math.max(0, base - hintPenalty - wrongPenalty);
 
-  // No penalty-free points left means no bonuses either — bonuses scale a real score, not a zero.
+  // No penalty-free points left means no bonuses either - bonuses scale a real score, not a zero.
   const speedBonus = afterPenalties > 0 ? computeSpeedBonus(base, durationMs) : 0;
   const streakMultiplier = afterPenalties > 0 ? computeStreakMultiplier(streak) : 1;
 

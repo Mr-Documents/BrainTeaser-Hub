@@ -58,7 +58,7 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
       const hint = attemptStore.takeNextHint(attemptToken, puzzleId, hints);
       if (!hint) {
         const attempt = attemptStore.get(attemptToken, puzzleId);
-        if (!attempt) throw new BadRequestError('Your session for this puzzle expired — load it again');
+        if (!attempt) throw new BadRequestError('Your session for this puzzle expired - load it again');
         throw new BadRequestError('No hints left for this puzzle');
       }
       return { hint: hint.text, step: hint.step, total: hint.total, remaining: hint.total - hint.step };
@@ -77,7 +77,7 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
 
       const attempt = attemptStore.get(attemptToken, puzzleId);
       if (!attempt) {
-        throw new BadRequestError('Your session for this puzzle expired — load the puzzle again');
+        throw new BadRequestError('Your session for this puzzle expired - load the puzzle again');
       }
 
       const player = normalizeUsername(username);
@@ -107,7 +107,7 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
           hintsRevealed,
           wrongSubmissions,
           explanation: puzzle.explanation || null,
-          message: 'You already solved this one — load a new puzzle to score again.',
+          message: 'You already solved this one - load a new puzzle to score again.',
         };
       }
 
@@ -160,14 +160,14 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
 }
 
 function encourage(wrongSubmissions) {
-  if (wrongSubmissions === 1) return 'Not quite — have another go.';
+  if (wrongSubmissions === 1) return 'Not quite - have another go.';
   if (wrongSubmissions === 2) return 'Still not it. Try a hint?';
   if (wrongSubmissions >= 5) return 'Close one? A hint costs 15 points and might unstick you.';
-  return 'Nope — think it through once more.';
+  return 'Nope - think it through once more.';
 }
 
 function buildSolveMessage(score, streak) {
-  if (score.total === 0) return 'Correct — but hints and wrong guesses left this one at 0 points.';
+  if (score.total === 0) return 'Correct - but hints and wrong guesses left this one at 0 points.';
   const parts = [`Correct! +${score.total} points`];
   if (score.speedBonus > 0) parts.push(`${score.speedBonus} speed bonus`);
   if (streak > 1) parts.push(`${streak}-day streak (x${score.streakMultiplier})`);

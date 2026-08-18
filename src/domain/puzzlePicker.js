@@ -34,7 +34,7 @@ function pickRandomPuzzle(puzzles, filters = {}, random = Math.random) {
   return pool[index];
 }
 
-/** FNV-1a — a small, stable string hash. Same input, same number, on every machine and run. */
+/** FNV-1a - a small, stable string hash. Same input, same number, on every machine and run. */
 function hashString(str) {
   let hash = 0x811c9dc5;
   for (let i = 0; i < str.length; i += 1) {

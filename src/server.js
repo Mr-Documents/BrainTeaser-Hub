@@ -39,7 +39,7 @@ function start() {
 
   // Drain in-flight requests before exiting so a deploy never truncates a response mid-write.
   const shutdown = (signal) => async () => {
-    logger.info(`${signal} received — shutting down`);
+    logger.info(`${signal} received - shutting down`);
     server.close(async () => {
       await app.locals.container.repository.flush?.().catch(() => {});
       process.exit(0);

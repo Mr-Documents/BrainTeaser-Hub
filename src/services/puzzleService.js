@@ -29,12 +29,12 @@ function createPuzzleService({ repository }) {
   return {
     invalidate,
 
-    /** Admin listing — includes drafts and full answer/hint text. */
+    /** Admin listing - includes drafts and full answer/hint text. */
     async list(options = {}) {
       return repository.listPuzzles({ includeUnpublished: true, ...options });
     },
 
-    /** Player-facing catalogue — published only, answers stripped. */
+    /** Player-facing catalogue - published only, answers stripped. */
     async listPublic(options = {}) {
       const { puzzles, total } = await repository.listPuzzles({ includeUnpublished: false, ...options });
       return { puzzles: puzzles.map(toPublicPuzzle), total };

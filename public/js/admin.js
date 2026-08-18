@@ -54,7 +54,7 @@
     partial:
       '<strong>Contains:</strong> correct if an accepted answer appears anywhere in what the player typed. Best for "explain why" puzzles.',
     regex:
-      '<strong>Regex:</strong> each line is a case-insensitive pattern, e.g. <code>^(5|five)( cents)?$</code>. Powerful, and easy to get wrong — use the tester.',
+      '<strong>Regex:</strong> each line is a case-insensitive pattern, e.g. <code>^(5|five)( cents)?$</code>. Powerful, and easy to get wrong - use the tester.',
   };
 
   // ---------------------------------------------------------------- utilities
@@ -267,7 +267,7 @@
     } catch (error) {
       if (error.details?.issues) {
         showFieldErrors(error.details.issues);
-        setMessage('The server rejected this puzzle — see the highlighted fields.', 'error');
+        setMessage('The server rejected this puzzle - see the highlighted fields.', 'error');
       } else {
         setMessage(error.message, 'error');
       }
@@ -329,7 +329,7 @@
   fields.question.addEventListener('input', syncDerived);
   fields.id.addEventListener('input', syncDerived);
   fields.difficulty.addEventListener('change', () => {
-    // Only re-suggest points while creating — never silently overwrite an author's chosen value.
+    // Only re-suggest points while creating - never silently overwrite an author's chosen value.
     if (!fields.originalId.value) {
       fields.basePoints.value = boot.defaultBasePoints?.[fields.difficulty.value] ?? 100;
     }

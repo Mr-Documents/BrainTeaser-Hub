@@ -16,10 +16,10 @@ function notFoundHandler() {
  * The single place an error becomes a response.
  *
  * Expected errors (AppError subclasses) keep their message and status. Anything else is logged
- * with its stack and reported as a generic 500 — internal details never reach the client.
+ * with its stack and reported as a generic 500 - internal details never reach the client.
  */
 function errorHandler({ logger }) {
-  // Four parameters is what marks this as Express error middleware — do not trim `next`.
+  // Four parameters is what marks this as Express error middleware - do not trim `next`.
   return function handleError(err, req, res, next) {
     const expected = err instanceof AppError;
     const status = expected ? err.status : 500;
@@ -33,7 +33,7 @@ function errorHandler({ logger }) {
     if (res.headersSent) return next(err);
 
     if (wantsJson(req)) {
-      // The stack is logged above but never serialised — it can name internal paths and secrets.
+      // The stack is logged above but never serialised - it can name internal paths and secrets.
       return res.status(status).json({
         ok: false,
         error: message,

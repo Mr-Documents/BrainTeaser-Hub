@@ -13,7 +13,7 @@
         "You meet me in canyons and empty halls.",
         "I only ever repeat what you already said."
       ],
-      "explanation": "An echo — sound reflected back, with no body of its own.",
+      "explanation": "An echo - sound reflected back, with no body of its own.",
       "basePoints": 80,
       "isPublished": true,
       "tags": [
@@ -153,7 +153,7 @@
       "hints": [
         "The question does not say \"exactly\" 28 days."
       ],
-      "explanation": "Every month has 28 days — some just keep going afterwards.",
+      "explanation": "Every month has 28 days - some just keep going afterwards.",
       "basePoints": 80,
       "isPublished": true,
       "tags": [
@@ -199,7 +199,7 @@
       "hints": [
         "It has 88 of them, or about 104."
       ],
-      "explanation": "A piano (or a keyboard) — keys that make sound, not entry.",
+      "explanation": "A piano (or a keyboard) - keys that make sound, not entry.",
       "basePoints": 70,
       "isPublished": true,
       "tags": [
@@ -336,7 +336,7 @@
       "hints": [
         "You usually catch it in winter."
       ],
-      "explanation": "A cold — you catch one, but you cannot throw one.",
+      "explanation": "A cold - you catch one, but you cannot throw one.",
       "basePoints": 70,
       "isPublished": true,
       "tags": [
@@ -380,7 +380,7 @@
       "hints": [
         "You might flip it to decide something."
       ],
-      "explanation": "A coin — heads and tails, no body.",
+      "explanation": "A coin - heads and tails, no body.",
       "basePoints": 70,
       "isPublished": true,
       "tags": [
@@ -565,7 +565,7 @@
         "The obvious answer of 10 cents makes the bat $1.10, and the total $1.20.",
         "Let the ball be x. Then x + (x + 100) = 110."
       ],
-      "explanation": "The ball is 5 cents and the bat is $1.05 — a difference of exactly $1.00, totalling $1.10.",
+      "explanation": "The ball is 5 cents and the bat is $1.05 - a difference of exactly $1.00, totalling $1.10.",
       "basePoints": 120,
       "isPublished": true,
       "tags": [
@@ -613,7 +613,7 @@
       "hints": [
         "Work backwards from the last day."
       ],
-      "explanation": "If it doubles daily and is full on day 48, it was half covered the day before — day 47.",
+      "explanation": "If it doubles daily and is full on day 48, it was half covered the day before - day 47.",
       "basePoints": 120,
       "isPublished": true,
       "tags": [
@@ -636,7 +636,7 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "Net progress is 1 foot per full day — but the last climb is different.",
+        "Net progress is 1 foot per full day - but the last climb is different.",
         "Once it reaches the top during the day, it never slips back."
       ],
       "explanation": "After 7 days it is at 7 feet. On day 8 it climbs 3 more, reaches 10 feet, and is out before night falls.",
@@ -688,7 +688,7 @@
       "hints": [
         "You took that runner's place, not the leader's."
       ],
-      "explanation": "You take second place from the person you passed — first place is still ahead of you.",
+      "explanation": "You take second place from the person you passed - first place is still ahead of you.",
       "basePoints": 110,
       "isPublished": true,
       "tags": [
@@ -734,7 +734,7 @@
       "hints": [
         "After the first subtraction, you are no longer subtracting from 25."
       ],
-      "explanation": "Only once — after that you are subtracting from 20.",
+      "explanation": "Only once - after that you are subtracting from 20.",
       "basePoints": 110,
       "isPublished": true,
       "tags": [
@@ -759,7 +759,7 @@
         "\"Friday\" is not always a day.",
         "He did not arrive alone."
       ],
-      "explanation": "His horse is named Friday — he rode in on Friday, and rode out on Friday.",
+      "explanation": "His horse is named Friday - he rode in on Friday, and rode out on Friday.",
       "basePoints": 120,
       "isPublished": true,
       "tags": [
@@ -840,7 +840,7 @@
         "He has no siblings, so \"my father's son\" can only be one person.",
         "\"My father's son\" is the speaker himself."
       ],
-      "explanation": "With no siblings, \"my father's son\" is the speaker. So the portrait's father is the speaker — the portrait shows his son.",
+      "explanation": "With no siblings, \"my father's son\" is the speaker. So the portrait's father is the speaker - the portrait shows his son.",
       "basePoints": 140,
       "isPublished": true,
       "tags": [
@@ -915,7 +915,7 @@
       ],
       "matchMode": "partial",
       "hints": [
-        "Every label is wrong — so the MIXED box is definitely not mixed.",
+        "Every label is wrong - so the MIXED box is definitely not mixed.",
         "One fruit from that box tells you exactly what it really is."
       ],
       "explanation": "The MIXED box must be pure. Whatever you draw is its true contents, and the other two labels then resolve uniquely.",
@@ -970,7 +970,7 @@
       "hints": [
         "There are also 13 spades."
       ],
-      "explanation": "A deck of playing cards — thirteen cards in the hearts suit.",
+      "explanation": "A deck of playing cards - thirteen cards in the hearts suit.",
       "basePoints": 110,
       "isPublished": true,
       "tags": [
@@ -1083,7 +1083,7 @@
       "hints": [
         "You put the letter inside it."
       ],
-      "explanation": "An ENVELOPE — it holds exactly one letter.",
+      "explanation": "An ENVELOPE - it holds exactly one letter.",
       "basePoints": 110,
       "isPublished": true,
       "tags": [
@@ -1105,7 +1105,7 @@
         "It means \"containing nothing\".",
         "MT sounds exactly like the whole word."
       ],
-      "explanation": "EMPTY → MPTY, EMPT, EMTY — all still sound like \"empty\", and the core is simply M-T.",
+      "explanation": "EMPTY → MPTY, EMPT, EMTY - all still sound like \"empty\", and the core is simply M-T.",
       "basePoints": 140,
       "isPublished": true,
       "tags": [
@@ -1116,7 +1116,7 @@
     },
     {
       "id": "vowels-in-alphabetical-order",
-      "question": "Which common English word contains all five vowels — a, e, i, o and u — exactly once, in alphabetical order?",
+      "question": "Which common English word contains all five vowels - a, e, i, o and u - exactly once, in alphabetical order?",
       "type": "word",
       "difficulty": "medium",
       "answers": [
@@ -1138,7 +1138,7 @@
     },
     {
       "id": "elevator-only-to-the-seventh-floor",
-      "question": "A man lives on the 10th floor. Every morning he takes the lift all the way down. Every evening he takes it to the 7th floor and walks the rest — except on rainy days, when he rides all the way up. Why?",
+      "question": "A man lives on the 10th floor. Every morning he takes the lift all the way down. Every evening he takes it to the 7th floor and walks the rest - except on rainy days, when he rides all the way up. Why?",
       "type": "lateral",
       "difficulty": "medium",
       "answers": [
@@ -1151,7 +1151,7 @@
       ],
       "matchMode": "partial",
       "hints": [
-        "The rain is the clue — what is he carrying on those days?",
+        "The rain is the clue - what is he carrying on those days?",
         "It is about what he can reach."
       ],
       "explanation": "He is too short to reach the button for floor 10. On rainy days he has an umbrella to press it with.",
@@ -1166,7 +1166,7 @@
     },
     {
       "id": "two-sons-same-hour-not-twins",
-      "question": "A woman gives birth to two sons in the same hour, on the same day, of the same year — yet they are not twins. How?",
+      "question": "A woman gives birth to two sons in the same hour, on the same day, of the same year - yet they are not twins. How?",
       "type": "lateral",
       "difficulty": "medium",
       "answers": [
@@ -1185,33 +1185,6 @@
       "isPublished": true,
       "tags": [
         "lateral"
-      ],
-      "createdAt": "2026-08-18T01:20:22.159Z",
-      "updatedAt": "2026-08-18T01:20:22.159Z"
-    },
-    {
-      "id": "antony-and-cleopatra-on-the-floor",
-      "question": "Antony and Cleopatra are found dead on the floor of a locked room, surrounded by water and broken glass. Nobody entered or left. What happened?",
-      "type": "lateral",
-      "difficulty": "medium",
-      "answers": [
-        "they are fish",
-        "fish",
-        "goldfish",
-        "the bowl broke",
-        "a fish tank broke"
-      ],
-      "matchMode": "partial",
-      "hints": [
-        "The names are a deliberate misdirection.",
-        "What was the glass, and what was the water for?"
-      ],
-      "explanation": "Antony and Cleopatra are goldfish. Their bowl was knocked over and broke.",
-      "basePoints": 130,
-      "isPublished": true,
-      "tags": [
-        "lateral",
-        "classic"
       ],
       "createdAt": "2026-08-18T01:20:22.159Z",
       "updatedAt": "2026-08-18T01:20:22.159Z"
@@ -1280,7 +1253,7 @@
       "hints": [
         "It is the seventh planet from the Sun."
       ],
-      "explanation": "Uranus — most likely knocked over by a giant impact early in its history.",
+      "explanation": "Uranus - most likely knocked over by a giant impact early in its history.",
       "basePoints": 110,
       "isPublished": true,
       "tags": [
@@ -1322,7 +1295,7 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "Flying squirrels only glide — they do not count."
+        "Flying squirrels only glide - they do not count."
       ],
       "explanation": "The bat. Everything else that \"flies\" among mammals is gliding.",
       "basePoints": 100,
@@ -1358,7 +1331,7 @@
     },
     {
       "id": "monty-hall-switch-probability",
-      "question": "In the Monty Hall problem — three doors, one car, the host who knows opens a losing door and offers a switch — what is your probability of winning if you always switch? Give it as a fraction.",
+      "question": "In the Monty Hall problem - three doors, one car, the host who knows opens a losing door and offers a switch - what is your probability of winning if you always switch? Give it as a fraction.",
       "type": "math",
       "difficulty": "hard",
       "answers": [
@@ -1394,10 +1367,10 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "Each trailing zero needs a factor of 10 — that is a 2 and a 5, and 5s are the scarce one.",
+        "Each trailing zero needs a factor of 10 - that is a 2 and a 5, and 5s are the scarce one.",
         "Count multiples of 5, then add the extra 5s inside 25, 50, 75 and 100."
       ],
-      "explanation": "floor(100/5) = 20, plus floor(100/25) = 4, giving 24 factors of five — and so 24 trailing zeros.",
+      "explanation": "floor(100/5) = 20, plus floor(100/25) = 4, giving 24 factors of five - and so 24 trailing zeros.",
       "basePoints": 190,
       "isPublished": true,
       "tags": [
@@ -1464,7 +1437,7 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "It is not 24 — the hands do not overlap at 12:00 and again at 1:00.",
+        "It is not 24 - the hands do not overlap at 12:00 and again at 1:00.",
         "In 12 hours they overlap 11 times."
       ],
       "explanation": "The hands align 11 times every 12 hours (roughly every 65.45 minutes), so 22 times a day.",
@@ -1490,7 +1463,7 @@
         "One cat catches one mouse every 3 minutes.",
         "In 100 minutes, one cat catches about 33 mice."
       ],
-      "explanation": "Each cat catches a mouse every 3 minutes, so 3 cats catch 100 mice in 100 minutes — still 3 cats.",
+      "explanation": "Each cat catches a mouse every 3 minutes, so 3 cats catch 100 mice in 100 minutes - still 3 cats.",
       "basePoints": 170,
       "isPublished": true,
       "tags": [
@@ -1518,7 +1491,7 @@
         "The Earth's radius cancels out completely.",
         "The extra radius is simply 1 metre divided by 2π."
       ],
-      "explanation": "Adding L to the circumference adds L/2π to the radius: 1/6.283 ≈ 0.159 m, about 16 cm — regardless of the planet's size.",
+      "explanation": "Adding L to the circumference adds L/2π to the radius: 1/6.283 ≈ 0.159 m, about 16 cm - regardless of the planet's size.",
       "basePoints": 200,
       "isPublished": true,
       "tags": [
@@ -1543,7 +1516,7 @@
         "You do not have to put every ball on the scale.",
         "Start by weighing 3 against 3."
       ],
-      "explanation": "Weigh 3 v 3. If balanced, the heavy ball is one of the 2 left aside — one more weighing finds it. If not, take the heavy trio and weigh 1 v 1. Two weighings either way.",
+      "explanation": "Weigh 3 v 3. If balanced, the heavy ball is one of the 2 left aside - one more weighing finds it. If not, take the heavy trio and weigh 1 v 1. Two weighings either way.",
       "basePoints": 180,
       "isPublished": true,
       "tags": [
@@ -1555,7 +1528,7 @@
     },
     {
       "id": "twelve-balls-heavier-or-lighter",
-      "question": "You have 12 identical-looking balls. Exactly one is a different weight — but you do not know whether it is heavier or lighter. What is the minimum number of balance-scale weighings that always identifies it?",
+      "question": "You have 12 identical-looking balls. Exactly one is a different weight - but you do not know whether it is heavier or lighter. What is the minimum number of balance-scale weighings that always identifies it?",
       "type": "logic",
       "difficulty": "hard",
       "answers": [
@@ -1593,7 +1566,7 @@
         "Count every crossing, including the empty return trips.",
         "At some point the farmer has to bring something back."
       ],
-      "explanation": "Goat over, return, wolf over, goat back, cabbage over, return, goat over — seven crossings.",
+      "explanation": "Goat over, return, wolf over, goat back, cabbage over, return, goat over - seven crossings.",
       "basePoints": 180,
       "isPublished": true,
       "tags": [
@@ -1615,7 +1588,7 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "Do not sum the infinite series — work out how long the bird is in the air.",
+        "Do not sum the infinite series - work out how long the bird is in the air.",
         "The trains close at 100 mph, so they meet after 1 hour."
       ],
       "explanation": "The trains meet after 1 hour, so the bird flies for 1 hour at 75 mph: 75 miles.",
@@ -1639,10 +1612,10 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "The person at the back can only ever guess — but their guess can carry information.",
+        "The person at the back can only ever guess - but their guess can carry information.",
         "Use parity: the back prisoner announces the parity of the black hats they can see."
       ],
-      "explanation": "The rearmost prisoner calls the parity of the black hats ahead — a 50/50 gamble for them — and every one of the other 99 can then deduce their own hat with certainty.",
+      "explanation": "The rearmost prisoner calls the parity of the black hats ahead - a 50/50 gamble for them - and every one of the other 99 can then deduce their own hat with certainty.",
       "basePoints": 220,
       "isPublished": true,
       "tags": [
@@ -1666,7 +1639,7 @@
       "matchMode": "exact",
       "hints": [
         "Once the first egg breaks, you must go floor by floor with the second.",
-        "Drop the first egg from floor 14, then 27, then 39 — decreasing steps that keep the worst case flat."
+        "Drop the first egg from floor 14, then 27, then 39 - decreasing steps that keep the worst case flat."
       ],
       "explanation": "Choose n with n(n+1)/2 ≥ 100. n = 14 gives 105, so 14 drops suffice in the worst case.",
       "basePoints": 210,
@@ -1704,7 +1677,7 @@
     },
     {
       "id": "nine-letter-word-one-letter-at-a-time",
-      "question": "Which nine-letter English word can have one letter removed at a time — leaving a valid English word at every single step, right down to a single letter?",
+      "question": "Which nine-letter English word can have one letter removed at a time - leaving a valid English word at every single step, right down to a single letter?",
       "type": "word",
       "difficulty": "hard",
       "answers": [
@@ -1759,7 +1732,7 @@
         "The only vowel is an E.",
         "It is the plural of a quality you might list in an interview."
       ],
-      "explanation": "STRENGTHS — nine letters, one vowel.",
+      "explanation": "STRENGTHS - nine letters, one vowel.",
       "basePoints": 180,
       "isPublished": true,
       "tags": [
@@ -1782,7 +1755,7 @@
         "The British spelling of standing in a line.",
         "The vowels are u-e-u-e-i."
       ],
-      "explanation": "QUEUEING — q-UEUEI-ng.",
+      "explanation": "QUEUEING - q-UEUEI-ng.",
       "basePoints": 180,
       "isPublished": true,
       "tags": [
@@ -1809,7 +1782,7 @@
         "\"To marry\" has two grammatical objects.",
         "She stands at the front of the ceremony."
       ],
-      "explanation": "She is the officiant — a priest or registrar. She married those men to their spouses.",
+      "explanation": "She is the officiant - a priest or registrar. She married those men to their spouses.",
       "basePoints": 170,
       "isPublished": true,
       "tags": [
@@ -1880,7 +1853,7 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "The answer is always odd — every even position dies in the first pass.",
+        "The answer is always odd - every even position dies in the first pass.",
         "For n people, the survivor is 2L + 1 where n = 2^m + L. Here 100 = 64 + 36."
       ],
       "explanation": "The Josephus formula gives 2 × 36 + 1 = 73.",
@@ -1906,7 +1879,7 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "Count pairs, not people — 23 people form 253 pairs.",
+        "Count pairs, not people - 23 people form 253 pairs.",
         "It is far higher than intuition suggests."
       ],
       "explanation": "About 50.7%. The count of pairs grows quadratically, which is why the answer feels wrong.",
@@ -1930,10 +1903,10 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "The gaps are 1, 2, 4, 8 — they are doubling.",
+        "The gaps are 1, 2, 4, 8 - they are doubling.",
         "Each term is double the previous term, minus one."
       ],
-      "explanation": "Each term is 2n − 1 of the one before: 17 × 2 − 1 = 33.",
+      "explanation": "Each term is 2n - 1 of the one before: 17 × 2 - 1 = 33.",
       "basePoints": 170,
       "isPublished": true,
       "tags": [
@@ -1958,7 +1931,7 @@
         "It sits entirely inside another country's capital city.",
         "Its area is about 0.49 km²."
       ],
-      "explanation": "Vatican City — roughly 0.49 km² and fewer than a thousand residents.",
+      "explanation": "Vatican City - roughly 0.49 km² and fewer than a thousand residents.",
       "basePoints": 150,
       "isPublished": true,
       "tags": [
@@ -1985,7 +1958,7 @@
         "Adding the $1 you kept to the $98 you owe adds two different kinds of quantity.",
         "The $98 you owe already includes the $1 in your pocket."
       ],
-      "explanation": "Nothing is missing. The $98 owed breaks down as $97 for the shirt plus the $1 you kept — adding that $1 again is meaningless double-counting.",
+      "explanation": "Nothing is missing. The $98 owed breaks down as $97 for the shirt plus the $1 you kept - adding that $1 again is meaningless double-counting.",
       "basePoints": 190,
       "isPublished": true,
       "tags": [
@@ -2012,7 +1985,7 @@
         "Solve it for 1 blue-eyed person, then 2, then 3, and find the pattern.",
         "With n blue-eyed islanders, they all leave on night n."
       ],
-      "explanation": "By induction: with n blue-eyed islanders, each waits n−1 nights for the others to leave, and when they do not, all n deduce their own colour and leave together on night 100.",
+      "explanation": "By induction: with n blue-eyed islanders, each waits n-1 nights for the others to leave, and when they do not, all n deduce their own colour and leave together on night 100.",
       "basePoints": 240,
       "isPublished": true,
       "tags": [
@@ -2058,7 +2031,7 @@
       ],
       "matchMode": "exact",
       "hints": [
-        "Babies have around 270 — many fuse as we grow."
+        "Babies have around 270 - many fuse as we grow."
       ],
       "explanation": "206 in a typical adult.",
       "basePoints": 110,
@@ -2082,7 +2055,7 @@
         "The left hand covers q w e r t, a s d f g, z x c v b.",
         "It is a twelve-letter job title, now largely retired."
       ],
-      "explanation": "STEWARDESSES — twelve letters, all on the left half of the keyboard.",
+      "explanation": "STEWARDESSES - twelve letters, all on the left half of the keyboard.",
       "basePoints": 190,
       "isPublished": true,
       "tags": [

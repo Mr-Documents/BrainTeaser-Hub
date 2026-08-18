@@ -2,7 +2,7 @@
   "name": "brain-teaser-hub",
   "version": "1.0.0",
   "private": true,
-  "description": "Brain Teaser Hub — curated logic, math, word and lateral puzzles with hints, scoring, streaks and a live leaderboard.",
+  "description": "Brain Teaser Hub - curated logic, math, word and lateral puzzles with hints, scoring, streaks and a live leaderboard.",
   "main": "src/server.js",
   "engines": {
     "node": ">=20.11"

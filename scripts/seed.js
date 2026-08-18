@@ -68,7 +68,7 @@ async function main() {
   }
 
   if (args.dryRun) {
-    logger.info(`Dry run — ${valid.length} valid, ${rejected.length} rejected. Nothing written.`);
+    logger.info(`Dry run - ${valid.length} valid, ${rejected.length} rejected. Nothing written.`);
     return;
   }
 

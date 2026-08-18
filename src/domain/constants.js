@@ -3,7 +3,7 @@
 /** Puzzle categories. Adding one here is enough for the UI, API and DB check constraint. */
 const PUZZLE_TYPES = Object.freeze(['logic', 'math', 'word', 'lateral', 'trivia']);
 
-/** Difficulty tiers — the "levels" players are grouped into. */
+/** Difficulty tiers - the "levels" players are grouped into. */
 const DIFFICULTIES = Object.freeze(['easy', 'medium', 'hard']);
 
 /** How a submitted answer is compared against the accepted answers. */
@@ -23,7 +23,7 @@ const DIFFICULTY_LABELS = Object.freeze({
   hard: 'Hard',
 });
 
-/** Suggested base points per tier — used as the admin form default. */
+/** Suggested base points per tier - used as the admin form default. */
 const DEFAULT_BASE_POINTS = Object.freeze({ easy: 80, medium: 120, hard: 180 });
 
 module.exports = {

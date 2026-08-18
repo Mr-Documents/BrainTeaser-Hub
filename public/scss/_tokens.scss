@@ -20,6 +20,17 @@
   --red: #ef4444;
   --green: #22c55e;
 
+  // Each brand colour has a paired "-ink" value: the base is for fills, bars and
+  // chart series; the -ink variant is the only one used for TEXT on a tinted
+  // background, and is picked per theme to clear WCAG AA (4.5:1) at badge size.
+  --indigo-ink: #a5b4fc;
+  --emerald-ink: #6ee7b7;
+  --amber-ink: #fcd34d;
+  --pink-ink: #f9a8d4;
+  --sky-ink: #7dd3fc;
+  --violet-ink: #d8b4fe;
+  --red-ink: #fca5a5;
+
   // Surfaces
   --bg: #0b1020;
   --bg-glow-1: rgba(99, 102, 241, 0.22);
@@ -39,6 +50,7 @@
 
   --accent: var(--indigo);
   --accent-ink: #ffffff;
+  --accent-gradient: linear-gradient(135deg, #4f46e5, #7c3aed);
   --accent-soft: rgba(99, 102, 241, 0.16);
 
   // Feedback
@@ -79,7 +91,7 @@
   --speed: 180ms;
 }
 
-// The light theme redefines tokens only — no component rule knows a theme exists.
+// The light theme redefines tokens only - no component rule knows a theme exists.
 :root[data-theme='light'] {
   color-scheme: light;
 
@@ -102,24 +114,34 @@
   --danger: #dc2626;
   --success: #16a34a;
 
+  --indigo-ink: #4338ca;
+  --emerald-ink: #047857;
+  --amber-ink: #92400e;
+  --pink-ink: #be185d;
+  --sky-ink: #0369a1;
+  --violet-ink: #7e22ce;
+  --red-ink: #b91c1c;
+
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 24px 56px rgba(15, 23, 42, 0.12);
 }
 
 // Semantic colours for the puzzle taxonomy, shared by badges, tiles and charts.
+// Maps the taxonomy to a brand colour *name*, so a consumer can reach both
+// `var(--<name>)` for a fill and `var(--<name>-ink)` for readable text.
 $type-colors: (
-  'logic': var(--indigo),
-  'math': var(--emerald),
-  'word': var(--amber),
-  'lateral': var(--pink),
-  'trivia': var(--sky),
+  'logic': 'indigo',
+  'math': 'emerald',
+  'word': 'amber',
+  'lateral': 'pink',
+  'trivia': 'sky',
 );
 
 $difficulty-colors: (
-  'easy': var(--sky),
-  'medium': var(--violet),
-  'hard': var(--red),
+  'easy': 'sky',
+  'medium': 'violet',
+  'hard': 'red',
 );
 
 // Breakpoints, mobile-first: each mixin adds capability above the given width.

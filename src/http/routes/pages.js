@@ -11,12 +11,12 @@ const {
 } = require('../../domain/constants');
 const { NotFoundError } = require('../../lib/errors');
 
-/** Copy for the category tiles on the home page — one place, not scattered through the template. */
+/** Copy for the category tiles on the home page - one place, not scattered through the template. */
 const TYPE_BLURBS = {
   logic: 'Deduction, riddles and "wait, what?" moments.',
   math: 'Numbers, patterns and quick arithmetic traps.',
   word: 'Anagrams, wordplay and language twists.',
-  lateral: 'Sideways thinking — the obvious answer is wrong.',
+  lateral: 'Sideways thinking - the obvious answer is wrong.',
   trivia: 'Facts that sound false but are not.',
 };
 
@@ -60,7 +60,7 @@ function createPagesRouter({ puzzleService, statsService, adminAuth, config }) {
         'home',
         baseLocals({
           navActive: 'home',
-          pageTitle: `${config.site.name} — daily logic, math and word puzzles`,
+          pageTitle: `${config.site.name} - daily logic, math and word puzzles`,
           stats,
           leaderboard,
           catalogue,
@@ -125,7 +125,7 @@ function createPagesRouter({ puzzleService, statsService, adminAuth, config }) {
         baseLocals({
           navActive: 'play',
           pageTitle: `Challenge · ${config.site.name}`,
-          pageDescription: `A ${puzzle.difficulty} ${puzzle.type} brain teaser — can you solve it?`,
+          pageDescription: `A ${puzzle.difficulty} ${puzzle.type} brain teaser - can you solve it?`,
           stats,
           leaderboard,
           mode: 'challenge',
