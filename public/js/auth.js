@@ -151,7 +151,10 @@
           signal: controller.signal,
         });
         if (controller.signal.aborted) return;
-        setStatus(result.available ? `"${result.name}" is available` : result.reason, result.available ? 'ok' : 'error');
+        setStatus(
+          result.available ? `"${result.name}" is available` : result.reason,
+          result.available ? 'ok' : 'error'
+        );
         submit.disabled = !result.available;
       } catch (err) {
         if (err.name === 'AbortError') return;

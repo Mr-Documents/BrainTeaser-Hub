@@ -91,15 +91,36 @@ test.describe('the sign-in flow', () => {
     const link = issuedLinks.at(-1).link;
     const path = link.slice(link.indexOf('/auth/callback'));
 
-    await request(app).get(path).expect(302);
-    const second = await request(app).get(path).expect(400);
-    assert.match(second.text, /expired or was already used/);
+    const first = await request(app).get(path).expect(302);
+    assert.ok(
+      (first.headers['set-cookie'] || []).some((c) => c.startsWith('bth_session=')),
+      'the first use signs in'
+    );
+
+    // A second use bounces back to a form the visitor can act on, and - the part that matters -
+    // issues no session.
+    const second = await request(app).get(path).expect(302);
+    assert.match(second.headers.location, /^\/signin/);
+    assert.match(decodeURIComponent(second.headers.location), /expired or was already used/);
+    assert.equal(
+      (second.headers['set-cookie'] || []).some((c) => c.startsWith('bth_session=')),
+      false,
+      'a replayed link must never issue a session'
+    );
   });
 
-  test('a forged or tampered token is rejected', async () => {
+  test('a forged or missing token is rejected without issuing a session', async () => {
     const { app } = buildTestApp();
-    await request(app).get('/auth/callback?token_hash=made-up&type=email').expect(400);
-    await request(app).get('/auth/callback').expect(400);
+
+    for (const path of ['/auth/callback?token_hash=made-up&type=email', '/auth/callback']) {
+      const res = await request(app).get(path).expect(302);
+      assert.match(res.headers.location, /^\/signin/);
+      assert.equal(
+        (res.headers['set-cookie'] || []).some((c) => c.startsWith('bth_session=')),
+        false,
+        `${path} must not sign anybody in`
+      );
+    }
   });
 
   test('a tampered session cookie is ignored', async () => {
@@ -135,8 +156,8 @@ test.describe('the sign-in flow', () => {
     await signIn(app, issuedLinks);
     const second = await request(app).post('/signin').send({ email: 'ada@example.com' }).expect(200);
 
-    assert.match(first.text, /Check your email/);
-    assert.match(second.text, /Check your email/, 'the response must not differ for a known address');
+    assert.match(first.text, /Check your inbox/);
+    assert.match(second.text, /Check your inbox/, 'the response must not differ for a known address');
   });
 
   test('signing in twice returns to the same account, not a duplicate', async () => {

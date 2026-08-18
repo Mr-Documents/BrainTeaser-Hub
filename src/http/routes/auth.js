@@ -108,9 +108,7 @@ function createAuthRouter({ accountService, session, config, limiters }) {
         return res.redirect(isNewAccount ? '/profile?welcome=1' : next);
       } catch (err) {
         // Send them back to a form they can actually act on rather than a dead error page.
-        return res.redirect(
-          `/signin?next=${encodeURIComponent(next)}&error=${encodeURIComponent(err.message)}`
-        );
+        return res.redirect(`/signin?next=${encodeURIComponent(next)}&error=${encodeURIComponent(err.message)}`);
       }
     })
   );
