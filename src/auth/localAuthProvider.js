@@ -15,7 +15,7 @@ const { BadRequestError } = require('../lib/errors');
  * It is refused in production by validateConfig(), because it will sign in anyone who can read
  * the server log.
  */
-function createLocalAuthProvider({ logger = console, onLink = null } = {}) {
+function createLocalAuthProvider({ logger = console, onLink = null, oauthProviders = ['google'] } = {}) {
   /** @type {Map<string, { userId: string, email: string, expiresAt: number, used: boolean }>} */
   const pendingLinks = new Map();
   /** @type {Map<string, { userId: string, email: string }>} keyed by lowercased email */
@@ -38,8 +38,12 @@ function createLocalAuthProvider({ logger = console, onLink = null } = {}) {
     return user;
   }
 
+  /** @type {Map<string, { provider: string, email: string, verifier: string }>} */
+  const pendingOAuth = new Map();
+
   return {
     name: 'local',
+    oauthProviders,
 
     async sendMagicLink(email, redirectTo) {
       const user = upsertUser(email);
@@ -71,7 +75,37 @@ function createLocalAuthProvider({ logger = console, onLink = null } = {}) {
       // Single use: a link that leaks from an inbox or a log cannot be replayed.
       pending.used = true;
       pendingLinks.delete(tokenHash);
-      return { userId: pending.userId, email: pending.email };
+      return { userId: pending.userId, email: pending.email, name: '' };
+    },
+
+    /**
+     * Simulates a provider handshake without leaving the machine: hands back a URL that points
+     * straight at our own callback with a fake code. Exercises exactly the same route, cookie
+     * and error handling as the real thing.
+     */
+    async startOAuth(provider, redirectTo) {
+      const code = crypto.randomBytes(18).toString('hex');
+      const verifier = crypto.randomBytes(32).toString('hex');
+      const email = `${provider}-user@example.com`;
+      pendingOAuth.set(code, { provider, email, verifier });
+
+      const separator = redirectTo.includes('?') ? '&' : '?';
+      const url = `${redirectTo}${separator}code=${code}`;
+      logger.warn?.(`LOCAL AUTH - simulating ${provider} sign-in`, { email });
+      return { url, pkce: { 'local-code-verifier': verifier } };
+    },
+
+    async completeOAuth(code, pkce = {}) {
+      const pending = pendingOAuth.get(code);
+      // The verifier check is what proves the callback belongs to the browser that started the
+      // flow - the same property PKCE gives us against the real provider.
+      if (!pending || pkce['local-code-verifier'] !== pending.verifier) {
+        throw new BadRequestError('That sign-in could not be completed. Please try again.');
+      }
+      pendingOAuth.delete(code);
+
+      const user = upsertUser(pending.email);
+      return { userId: user.userId, email: user.email, name: '' };
     },
 
     async getUser(userId) {

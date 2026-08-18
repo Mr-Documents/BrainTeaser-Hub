@@ -84,6 +84,11 @@
   --shell: 1180px;
   --nav-h: 4rem;
 
+  // Form controls. One scale, so an input, a select and a button line up on a row.
+  --control-h: 48px;
+  --control-px: 1rem;
+  --control-py: 0.8rem;
+
   --font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 

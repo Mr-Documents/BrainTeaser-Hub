@@ -81,6 +81,8 @@
             <p class="form__message is-error" role="alert"><%= error %></p>
           <% } %>
 
+          <%- include('partials/oauth-buttons') %>
+
           <form method="post" action="/<%= mode %>" class="auth-form" novalidate data-auth-form>
             <input type="hidden" name="mode" value="<%= mode %>" />
             <input type="hidden" name="next" value="<%= next %>" />
@@ -120,9 +122,7 @@
             <% } %>
           </p>
 
-          <div class="auth-divider" role="separator"><span>or</span></div>
-
-          <a class="btn btn--ghost btn--block" href="/play">Play without an account</a>
+          <a class="btn btn--ghost btn--block auth-skip" href="/play">Play without an account</a>
 
         <% } %>
       </section>

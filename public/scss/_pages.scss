@@ -1108,3 +1108,22 @@
     color: var(--ink-faint);
   }
 }
+
+// The anonymous escape hatch sits apart from the sign-in choices, not among them.
+.auth-skip {
+  margin-top: var(--s-4);
+  padding-top: 0;
+  font-weight: 500;
+}
+
+// Auth is the page's single task, so its controls get the roomier end of the scale.
+.auth-card {
+  --control-h: 52px;
+  --control-py: 0.95rem;
+  --control-px: 1.05rem;
+}
+
+.auth-card .field > label {
+  font-size: 0.88rem;
+  color: var(--ink);
+}

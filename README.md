@@ -41,6 +41,8 @@ npm run dev
    - **CLI**: `supabase link --project-ref <ref>` then `supabase db push`.
 4. `npm run db:push` to confirm every table and view landed.
 5. `npm run db:seed` to load the puzzle catalogue.
+6. For Google sign-in: **Authentication -> Providers -> Google** in the Supabase dashboard, then
+   set `OAUTH_PROVIDERS=google` in `.env`. Leave it empty for email-only sign-in.
 
 The migration creates `puzzles`, `players` and `attempts`, an atomic `record_solve()` function,
 three read-model views for the charts, and RLS policies that leave the anon key able to read public
@@ -136,11 +138,18 @@ belong to somebody.
 | Daily streak multiplier          | no        | yes       |
 | Score follows you across devices | no        | yes       |
 
-**How it works.** Passwordless magic link, driven entirely from the server: the browser never loads
+**Two ways in**, both landing in the same place: **Continue with Google** (one click), or a
+passwordless **magic link** by email.
+
+**How it works.** Both flows are driven entirely from the server: the browser never loads
 the Supabase SDK and never holds a Supabase JWT. We verify the emailed token server-side and issue
 our own signed, `httpOnly`, 30-day session cookie. That keeps the CSP free of third-party
 `connect-src`, puts no token within reach of an XSS, and makes revocation a matter of rotating
 `SESSION_SECRET`.
+
+Google sign-in uses PKCE. The code verifier is parked in a separate signed, `httpOnly`,
+10-minute cookie for the round trip, so a callback URL that leaks or is replayed cannot be
+redeemed by anyone but the browser that started the handshake.
 
 The scoring identity comes from that cookie, never from the request body - a username in a
 `/api/submit` payload is ignored outright, which is what closes the old "type any name, take their

@@ -492,16 +492,15 @@
   color: var(--danger);
 }
 
-input[type='text'],
-input[type='search'],
-input[type='number'],
-input[type='password'],
+// Opt-out rather than opt-in: an allow-list of [type=...] silently misses any type it does
+// not name (email, tel, url, date), leaving that field with raw browser styling.
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([type='hidden']),
 select,
 textarea {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
-  padding: var(--s-3);
+  min-height: var(--control-h);
+  padding: var(--control-py) var(--control-px);
   border-radius: var(--r-md);
   border: 1px solid var(--border);
   background: var(--surface-2);
@@ -509,17 +508,27 @@ textarea {
   font: inherit;
   // 16px keeps iOS Safari from zooming the viewport when a field is focused.
   font-size: 1rem;
+  // Set explicitly so the text sits optically centred rather than inheriting the body's 1.55.
+  line-height: 1.45;
+  appearance: none;
   transition:
     border-color var(--speed) var(--ease),
-    box-shadow var(--speed) var(--ease);
+    box-shadow var(--speed) var(--ease),
+    background var(--speed) var(--ease);
 
   &::placeholder {
     color: var(--ink-faint);
+    opacity: 1; // Firefox dims placeholders by default, which double-fades ours.
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    border-color: color-mix(in srgb, var(--border) 60%, var(--ink-faint));
   }
 
   &:focus {
     outline: none;
     border-color: var(--indigo);
+    background: color-mix(in srgb, var(--surface-2) 70%, var(--surface));
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
@@ -527,17 +536,31 @@ textarea {
     border-color: var(--danger);
     box-shadow: 0 0 0 3px var(--danger-soft);
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Chrome paints autofilled fields a hard yellow-white that ignores the theme.
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 100px var(--surface-2) inset;
+  caret-color: var(--ink);
 }
 
 textarea {
   resize: vertical;
-  line-height: 1.5;
-  min-height: 5rem;
+  line-height: 1.55;
+  min-height: 6rem;
+  // A textarea's first line should sit level with a single-line input's text.
+  padding-block: calc(var(--control-py) - 1px);
 }
 
 select {
-  appearance: none;
-  padding-right: var(--s-6);
+  padding-right: calc(var(--control-px) * 2 + 6px);
   background-image:
     linear-gradient(45deg, transparent 50%, currentColor 50%),
     linear-gradient(135deg, currentColor 50%, transparent 50%);
@@ -885,4 +908,49 @@ select {
   margin: 0;
   font-size: 0.82rem;
   color: var(--ink-faint);
+}
+
+// ------------------------------------------------------------ oauth buttons
+
+.oauth {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+
+.oauth__form {
+  margin: 0;
+}
+
+// A provider button borrows the provider's own visual language, not ours: a neutral
+// surface with the brand mark carrying the colour. That is what makes it recognisable.
+.btn--oauth {
+  --btn-bg: var(--surface);
+  --btn-ink: var(--ink-strong);
+  --btn-border: var(--border);
+
+  min-height: var(--control-h);
+  font-weight: 600;
+  // Keeps the label optically centred while the mark sits at a fixed inset.
+  position: relative;
+  justify-content: center;
+  gap: var(--s-3);
+  box-shadow: var(--shadow-sm);
+
+  &:hover:not(:disabled) {
+    --btn-bg: var(--surface-raised);
+    --btn-border: color-mix(in srgb, var(--ink-faint) 45%, var(--border));
+  }
+}
+
+.btn__brand {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  line-height: 0;
+
+  svg {
+    display: block;
+  }
 }

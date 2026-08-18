@@ -32,13 +32,19 @@ function makePuzzle(overrides = {}) {
  * @param {object[]} [options.puzzles] seed catalogue
  * @param {boolean} [options.adminAuth] require an admin token (default false)
  */
-function buildTestApp({ puzzles = [makePuzzle()], adminAuth = false, adminToken = 'test-token' } = {}) {
+function buildTestApp({
+  puzzles = [makePuzzle()],
+  adminAuth = false,
+  adminToken = 'test-token',
+  oauthProviders = ['google'],
+} = {}) {
   const repository = createJsonRepository({ persist: false, seed: { puzzles } });
   // Captures the magic links this app issues, so a test can "click" one without an inbox.
   const issuedLinks = [];
   const authProvider = createLocalAuthProvider({
     logger: { warn() {}, info() {} },
     onLink: (link) => issuedLinks.push(link),
+    oauthProviders,
   });
 
   const testConfig = {

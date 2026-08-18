@@ -19,6 +19,8 @@ function createSessionMiddleware({ config, repository, logger = console }) {
   // sessions do not survive a restart. Production refuses to boot without one (see validateConfig).
   const secret = config.auth.sessionSecret || require('crypto').randomBytes(32).toString('hex');
   const signer = createCookieSigner(secret, 'player-session');
+  // A separate namespace: an OAuth handshake cookie can never be replayed as a session.
+  const oauthSigner = createCookieSigner(secret, 'oauth-handshake');
 
   const cookieOptions = {
     httpOnly: true,
@@ -85,7 +87,27 @@ function createSessionMiddleware({ config, repository, logger = console }) {
     };
   }
 
-  return { attach, issue, clear, requireSession: require$ };
+  /**
+   * Park the PKCE verifier for the duration of the trip to the provider.
+   * httpOnly so no script can read it, short-lived so a stale one cannot be reused.
+   */
+  function startHandshake(res, payload) {
+    res.cookie(config.auth.oauthCookieName, oauthSigner.pack(payload, config.auth.oauthTtlMs), {
+      ...cookieOptions,
+      maxAge: config.auth.oauthTtlMs,
+    });
+  }
+
+  /** @returns {object|null} the parked payload, or null if absent, expired or tampered with. */
+  function readHandshake(req) {
+    return oauthSigner.unpack(parseCookies(req.get('cookie'))[config.auth.oauthCookieName]);
+  }
+
+  function endHandshake(res) {
+    res.clearCookie(config.auth.oauthCookieName, cookieOptions);
+  }
+
+  return { attach, issue, clear, requireSession: require$, startHandshake, readHandshake, endHandshake };
 }
 
 module.exports = { createSessionMiddleware };

@@ -61,6 +61,21 @@ const config = Object.freeze({
     sessionSecret: (process.env.SESSION_SECRET || process.env.ADMIN_TOKEN || '').trim(),
     sessionMaxAgeMs: toInt(process.env.SESSION_DAYS, 30) * 24 * 60 * 60 * 1000,
     cookieName: 'bth_session',
+    // Only providers listed here get a button. A provider that is not also enabled in the
+    // Supabase dashboard would fail on click, so this is opt-in rather than assumed.
+    // Defaults to google on the local driver so the flow is visible without any setup.
+    oauthProviders: (process.env.OAUTH_PROVIDERS === undefined
+      ? hasSupabaseCreds
+        ? ''
+        : 'google'
+      : process.env.OAUTH_PROVIDERS
+    )
+      .split(',')
+      .map((p) => p.trim().toLowerCase())
+      .filter(Boolean),
+    // The PKCE verifier lives here between leaving for the provider and coming back.
+    oauthCookieName: 'bth_oauth',
+    oauthTtlMs: 10 * 60 * 1000,
   }),
 
   admin: Object.freeze({

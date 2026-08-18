@@ -46,6 +46,15 @@ function assertValidDisplayName(name) {
   return value;
 }
 
+/** @returns {string|null} the name if it passes validation, null if not - never throws. */
+function assertValidDisplayNameOrNull(name) {
+  try {
+    return assertValidDisplayName(name);
+  } catch {
+    return null;
+  }
+}
+
 /** Turn an email into a first-guess display name: "ada.lovelace@x.com" -> "ada.lovelace". */
 function suggestDisplayName(email) {
   const local = normalizeEmail(email).split('@')[0] || 'player';
@@ -84,22 +93,51 @@ function createAccountService({ repository, authProvider, logger = console }) {
       return { sent: true, ...(result.link ? { devLink: result.link } : {}) };
     },
 
+    /** Which OAuth providers should be offered. Empty means email only. */
+    get oauthProviders() {
+      return authProvider.oauthProviders || [];
+    },
+
     /**
-     * Complete sign-in from the emailed link, creating the player profile on first use.
+     * Begin an OAuth handshake.
+     * @returns {Promise<{ url: string, pkce: object }>}
+     * @throws {BadRequestError} for a provider that is not enabled
+     */
+    async startOAuth({ provider, redirectTo }) {
+      const name = String(provider || '').toLowerCase();
+      if (!(authProvider.oauthProviders || []).includes(name)) {
+        throw new BadRequestError('That sign-in method is not available.');
+      }
+      return authProvider.startOAuth(name, redirectTo);
+    },
+
+    /**
+     * Turn a verified identity into a session, creating the player profile on first sight.
+     * Shared by both routes in, so a magic link and an OAuth return land in exactly the same place.
      * @returns {Promise<{ userId: string, player: object, isNewAccount: boolean }>}
      */
-    async completeSignIn({ tokenHash, type }) {
-      const { userId, email } = await authProvider.verifyMagicLink(tokenHash, type);
-
+    async establishAccount({ userId, email, name = '' }) {
       const existing = await repository.getPlayer(userId);
-      if (existing) {
-        return { userId, player: existing, isNewAccount: false };
-      }
+      if (existing) return { userId, player: existing, isNewAccount: false };
 
-      const displayName = await findAvailableDisplayName(suggestDisplayName(email));
+      // A provider-supplied name is a better first guess than the local part of an address.
+      const preferred = name ? assertValidDisplayNameOrNull(name) : null;
+      const displayName = await findAvailableDisplayName(preferred || suggestDisplayName(email));
       const player = await repository.upsertPlayer({ userId, email, displayName });
       logger.info?.('player account created', { displayName });
       return { userId, player, isNewAccount: true };
+    },
+
+    /** Complete sign-in from the emailed link. */
+    async completeSignIn({ tokenHash, type }) {
+      const identity = await authProvider.verifyMagicLink(tokenHash, type);
+      return this.establishAccount(identity);
+    },
+
+    /** Complete sign-in from an OAuth redirect. */
+    async completeOAuth({ code, pkce }) {
+      const identity = await authProvider.completeOAuth(code, pkce);
+      return this.establishAccount(identity);
     },
 
     async getProfile(userId) {
