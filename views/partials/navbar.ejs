@@ -36,7 +36,18 @@
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme" title="Switch colour theme">
           <span data-theme-icon aria-hidden="true">◐</span>
         </button>
-        <a class="btn btn--primary btn--sm" href="/play">Start solving</a>
+        <% if (typeof isSignedIn !== 'undefined' && isSignedIn) { %>
+          <a class="nav-account<%= active === 'account' ? ' is-active' : '' %>" href="/profile" title="Your profile">
+            <span class="nav-account__avatar" aria-hidden="true"><%= currentPlayer.displayName.trim().charAt(0).toUpperCase() %></span>
+            <span class="nav-account__text">
+              <span class="nav-account__name"><%= currentPlayer.displayName %></span>
+              <span class="nav-account__meta"><%= Number(currentPlayer.totalScore || 0).toLocaleString('en-US') %> pts<% if (currentPlayer.currentStreak > 0) { %> · <%= currentPlayer.currentStreak %>🔥<% } %></span>
+            </span>
+          </a>
+        <% } else { %>
+          <a class="btn btn--ghost btn--sm" href="/signin">Sign in</a>
+          <a class="btn btn--primary btn--sm" href="/play">Start solving</a>
+        <% } %>
       </div>
     </nav>
   </div>

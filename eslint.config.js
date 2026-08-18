@@ -17,7 +17,8 @@ module.exports = [
       globals: { ...globals.node },
     },
     rules: {
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_|^next$', caughtErrors: 'none' }],
+      // ignoreRestSiblings lets `const { secret, ...safe } = row` document a deliberate omission.
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_|^next$', caughtErrors: 'none', ignoreRestSiblings: true }],
       'no-console': ['warn', { allow: ['warn', 'error', 'log'] }],
       'no-var': 'error',
       'prefer-const': 'error',

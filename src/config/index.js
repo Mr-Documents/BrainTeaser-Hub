@@ -52,6 +52,17 @@ const config = Object.freeze({
     schema: process.env.SUPABASE_SCHEMA || 'public',
   }),
 
+  auth: Object.freeze({
+    // 'supabase' emails a real magic link; 'local' prints it to the log so a fresh clone works
+    // with no project. Auto-selects the same way the data driver does.
+    driver: (process.env.AUTH_DRIVER || '').trim().toLowerCase() || (hasSupabaseCreds ? 'supabase' : 'local'),
+    // Signs the player session cookie. Falls back to the admin token so a single secret is enough
+    // to get started, but should be its own value in production.
+    sessionSecret: (process.env.SESSION_SECRET || process.env.ADMIN_TOKEN || '').trim(),
+    sessionMaxAgeMs: toInt(process.env.SESSION_DAYS, 30) * 24 * 60 * 60 * 1000,
+    cookieName: 'bth_session',
+  }),
+
   admin: Object.freeze({
     // Admin writes are rejected outright when no token is configured in production.
     token: (process.env.ADMIN_TOKEN || '').trim(),
@@ -94,6 +105,17 @@ function validateConfig(cfg = config) {
   }
   if (cfg.isProduction && cfg.admin.required && !cfg.admin.token) {
     throw new Error('ADMIN_TOKEN must be set in production - admin routes would otherwise be unprotected.');
+  }
+  if (cfg.isProduction && cfg.auth.driver === 'local') {
+    throw new Error(
+      'AUTH_DRIVER=local prints sign-in links to the log, which would let anyone reading it sign in as any user. Configure Supabase Auth for production.'
+    );
+  }
+  if (cfg.isProduction && !cfg.auth.sessionSecret) {
+    throw new Error('SESSION_SECRET must be set in production - player sessions cannot be signed without it.');
+  }
+  if (!cfg.isProduction && cfg.auth.driver === 'local') {
+    warnings.push('Auth driver is "local" - sign-in links are printed to this log instead of emailed.');
   }
   if (cfg.isProduction && cfg.data.driver === 'json') {
     warnings.push('Running in production on the JSON file driver - data will not survive a redeploy.');

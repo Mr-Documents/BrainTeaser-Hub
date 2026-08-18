@@ -43,13 +43,26 @@ const toSnake = (puzzle) => ({
 
 const playerToCamel = (row) =>
   row && {
-    username: row.username,
+    userId: row.user_id,
+    displayName: row.display_name,
+    email: row.email ?? null,
     totalScore: row.total_score ?? 0,
     solves: row.solves ?? 0,
     currentStreak: row.current_streak ?? 0,
     bestStreak: row.best_streak ?? 0,
     lastSolvedAt: row.last_solved_at ?? null,
     createdAt: row.created_at ?? null,
+  };
+
+/** The public shape - no user id, no email. */
+const leaderboardToCamel = (row) =>
+  row && {
+    displayName: row.display_name,
+    totalScore: row.total_score ?? 0,
+    solves: row.solves ?? 0,
+    currentStreak: row.current_streak ?? 0,
+    bestStreak: row.best_streak ?? 0,
+    lastSolvedAt: row.last_solved_at ?? null,
   };
 
 /**
@@ -170,14 +183,27 @@ function createSupabaseRepository({ url, key, schema = 'public', logger = consol
 
     // ---------------------------------------------------------------- players
 
-    async getPlayer(username) {
-      const result = await db.from('players').select('*').eq('username', username).maybeSingle();
+    async getPlayer(userId) {
+      const result = await db.from('players').select('*').eq('user_id', userId).maybeSingle();
       return playerToCamel(unwrap(result, 'loading a player'));
     },
 
-    async recordSolve({ username, pointsEarned, streak = null }) {
+    async findPlayerByDisplayName(displayName) {
+      const result = await db.from('players').select('*').ilike('display_name', String(displayName)).maybeSingle();
+      return playerToCamel(unwrap(result, 'checking a display name'));
+    },
+
+    async upsertPlayer({ userId, email = null, displayName }) {
+      const patch = { user_id: userId, display_name: displayName };
+      if (email) patch.email = email;
+      const result = await db.from('players').upsert(patch, { onConflict: 'user_id' }).select('*').single();
+      return playerToCamel(unwrap(result, 'saving a player profile'));
+    },
+
+    async recordSolve({ userId, displayName, pointsEarned, streak = null }) {
       const result = await db.rpc('record_solve', {
-        p_username: username,
+        p_user_id: userId,
+        p_display_name: displayName,
         p_points: Math.max(0, Math.round(pointsEarned)),
         p_streak: streak,
       });
@@ -185,24 +211,25 @@ function createSupabaseRepository({ url, key, schema = 'public', logger = consol
       return playerToCamel(Array.isArray(row) ? row[0] : row);
     },
 
-    async resetStreak(username) {
+    async deletePlayer(userId) {
+      const result = await db.from('players').delete().eq('user_id', userId).select('user_id').maybeSingle();
+      return Boolean(unwrap(result, 'deleting a player'));
+    },
+
+    async resetStreak(userId) {
       const result = await db
         .from('players')
         .update({ current_streak: 0 })
-        .eq('username', username)
+        .eq('user_id', userId)
         .select('*')
         .maybeSingle();
       return playerToCamel(unwrap(result, 'resetting a streak'));
     },
 
     async getLeaderboard(limit = 10) {
-      const result = await db
-        .from('players')
-        .select('username, total_score, solves, current_streak, best_streak, last_solved_at')
-        .order('total_score', { ascending: false })
-        .order('username', { ascending: true })
-        .limit(limit);
-      return (unwrap(result, 'loading the leaderboard') || []).map(playerToCamel);
+      // Reads the view, not the table, so an email can never leak into a public response.
+      const result = await db.from('v_leaderboard').select('*').limit(limit);
+      return (unwrap(result, 'loading the leaderboard') || []).map(leaderboardToCamel);
     },
 
     // ------------------------------------------------------------------ stats
@@ -211,7 +238,7 @@ function createSupabaseRepository({ url, key, schema = 'public', logger = consol
       correct,
       puzzle,
       pointsEarned = 0,
-      username = null,
+      userId = null,
       hintsUsed = 0,
       wrongAttempts = 0,
       durationMs = null,
@@ -219,7 +246,7 @@ function createSupabaseRepository({ url, key, schema = 'public', logger = consol
       unwrap(
         await db.from('attempts').insert({
           puzzle_id: puzzle?.id ?? null,
-          username,
+          user_id: userId,
           is_correct: !!correct,
           points_earned: Math.max(0, Math.round(pointsEarned)),
           hints_used: hintsUsed,

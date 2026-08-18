@@ -3,7 +3,7 @@
 const express = require('express');
 const { asyncHandler } = require('../middleware/asyncHandler');
 const { PUZZLE_TYPES, DIFFICULTIES } = require('../../domain/constants');
-const { NotFoundError, BadRequestError } = require('../../lib/errors');
+const { NotFoundError, UnauthorizedError } = require('../../lib/errors');
 
 const csvToArray = (value) =>
   String(value || '')
@@ -18,7 +18,7 @@ const oneOf = (value, allowed) => (allowed.includes(String(value)) ? String(valu
  * The player-facing API. Every response uses the { ok, data } / { ok, error } envelope
  * installed by the respond() middleware.
  */
-function createApiRouter({ puzzleService, gameService, statsService, repository, limiters }) {
+function createApiRouter({ puzzleService, gameService, statsService, accountService, repository, limiters }) {
   const router = express.Router();
   const submitLimiter = limiters?.submit || ((req, res, next) => next());
 
@@ -106,8 +106,9 @@ function createApiRouter({ puzzleService, gameService, statsService, repository,
     '/submit',
     submitLimiter,
     asyncHandler(async (req, res) => {
-      const { puzzleId, answer, username, attemptToken } = req.body || {};
-      res.ok(await gameService.submitAnswer({ puzzleId, answer, username, attemptToken }));
+      const { puzzleId, answer, attemptToken } = req.body || {};
+      // The scoring identity comes from the signed session cookie, never from the request body.
+      res.ok(await gameService.submitAnswer({ puzzleId, answer, attemptToken, player: req.player || null }));
     })
   );
 
@@ -128,14 +129,25 @@ function createApiRouter({ puzzleService, gameService, statsService, repository,
     })
   );
 
+  /**
+   * Live display-name availability for the profile form.
+   * Display names are public on the leaderboard, so answering this reveals nothing new.
+   */
   router.get(
-    '/players/:username',
+    '/account/name-available',
     asyncHandler(async (req, res) => {
-      const username = String(req.params.username || '').trim();
-      if (!username) throw new BadRequestError('username is required');
-      const profile = await statsService.getPlayerProfile(username);
-      if (!profile) throw new NotFoundError(`No player named "${username}" has scored yet`);
-      res.ok(profile);
+      if (!req.session?.userId) throw new UnauthorizedError('Sign in to do that.');
+      res.ok(await accountService.checkDisplayName(req.session.userId, req.query.name));
+    })
+  );
+
+  /** The signed-in player's own profile. There is deliberately no endpoint for reading someone else's. */
+  router.get(
+    '/me',
+    asyncHandler(async (req, res) => {
+      if (!req.session?.userId) return res.ok({ signedIn: false, player: null });
+      const profile = await accountService.getProfile(req.session.userId);
+      res.ok({ signedIn: true, player: profile });
     })
   );
 

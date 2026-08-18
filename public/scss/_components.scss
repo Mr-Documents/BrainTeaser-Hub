@@ -780,3 +780,109 @@ select {
     background-position: -200% 0;
   }
 }
+
+// ------------------------------------------------------------------- account
+
+.nav-account {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-3) var(--s-1) var(--s-1);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  text-decoration: none;
+  color: inherit;
+  min-height: 40px;
+  min-width: 0;
+  transition:
+    border-color var(--speed) var(--ease),
+    background var(--speed) var(--ease);
+
+  &:hover,
+  &.is-active {
+    border-color: color-mix(in srgb, var(--indigo) 45%, transparent);
+    background: var(--accent-soft);
+  }
+}
+
+.nav-account__avatar {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent-gradient);
+}
+
+.nav-account__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.nav-account__name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 9rem;
+}
+
+.nav-account__meta {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.auth-icon {
+  font-size: 2.5rem;
+  margin: 0 0 var(--s-3);
+  line-height: 1;
+}
+
+.auth-footnote {
+  margin: var(--s-4) 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
+.dev-link {
+  text-align: left;
+
+  p {
+    margin: 0;
+  }
+
+  p + p {
+    margin-top: var(--s-2);
+  }
+
+  a {
+    word-break: break-all;
+  }
+}
+
+.player-bar__identity {
+  min-width: 0;
+  flex: 1 1 14rem;
+}
+
+.player-bar__who {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.player-bar__note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}

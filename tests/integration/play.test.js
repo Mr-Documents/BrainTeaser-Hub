@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const request = require('supertest');
 
-const { buildTestApp, makePuzzle } = require('../helpers/testApp');
+const { buildTestApp, makePuzzle, signIn } = require('../helpers/testApp');
 
 test.describe('GET /api/puzzles/random', () => {
   test('serves a puzzle with an attempt token, and never the answers', async () => {
@@ -121,12 +121,14 @@ test.describe('POST /api/submit', () => {
   };
 
   test('awards the full base score for a clean solve', async () => {
-    const { app } = buildTestApp();
-    const attemptToken = await startAttempt(app);
+    const { app, issuedLinks } = buildTestApp();
+    const { cookie } = await signIn(app, issuedLinks);
+    const { body } = await request(app).get('/api/puzzles/test-puzzle').set('Cookie', cookie);
 
     const res = await request(app)
       .post('/api/submit')
-      .send({ puzzleId: 'test-puzzle', answer: 'piano', username: 'Ada', attemptToken })
+      .set('Cookie', cookie)
+      .send({ puzzleId: 'test-puzzle', answer: 'piano', attemptToken: body.data.attemptToken })
       .expect(200);
 
     const data = res.body.data;
@@ -136,7 +138,7 @@ test.describe('POST /api/submit', () => {
     assert.ok(data.pointsEarned >= 100, `expected at least the base score, got ${data.pointsEarned}`);
     assert.equal(data.breakdown.hintPenalty, 0);
     assert.equal(data.explanation, 'A piano.');
-    assert.equal(data.leaderboard[0].username, 'Ada');
+    assert.equal(data.leaderboard[0].displayName, 'ada');
   });
 
   test('accepts a forgiving variant of the answer', async () => {
@@ -226,29 +228,36 @@ test.describe('POST /api/submit', () => {
   });
 
   test('accumulates a player total across separate puzzles', async () => {
-    const { app } = buildTestApp({ puzzles: [makePuzzle({ id: 'one' }), makePuzzle({ id: 'two' })] });
+    const { app, issuedLinks } = buildTestApp({ puzzles: [makePuzzle({ id: 'one' }), makePuzzle({ id: 'two' })] });
+    const { cookie } = await signIn(app, issuedLinks);
 
     for (const id of ['one', 'two']) {
-      const attemptToken = await startAttempt(app, id);
-      await request(app).post('/api/submit').send({ puzzleId: id, answer: 'piano', username: 'Ada', attemptToken });
+      const { body } = await request(app).get(`/api/puzzles/${id}`).set('Cookie', cookie);
+      await request(app)
+        .post('/api/submit')
+        .set('Cookie', cookie)
+        .send({ puzzleId: id, answer: 'piano', attemptToken: body.data.attemptToken });
     }
 
     const res = await request(app).get('/api/leaderboard').expect(200);
-    const ada = res.body.data.entries.find((e) => e.username === 'Ada');
+    const ada = res.body.data.entries.find((e) => e.displayName === 'ada');
     assert.equal(ada.solves, 2);
     assert.ok(ada.totalScore >= 200);
     assert.equal(ada.rank, 1);
   });
 
-  test('falls back to Anonymous for a blank display name', async () => {
+  test('an anonymous solve creates no leaderboard entry at all', async () => {
+    // Superseded the old "falls back to Anonymous" behaviour: a name in the body is now
+    // ignored outright, so an unauthenticated solve simply has no owner to rank.
     const { app } = buildTestApp();
     const attemptToken = await startAttempt(app);
     await request(app)
       .post('/api/submit')
-      .send({ puzzleId: 'test-puzzle', answer: 'piano', username: '   ', attemptToken });
+      .send({ puzzleId: 'test-puzzle', answer: 'piano', username: 'Impostor', attemptToken })
+      .expect(200);
 
     const res = await request(app).get('/api/leaderboard');
-    assert.equal(res.body.data.entries[0].username, 'Anonymous');
+    assert.deepEqual(res.body.data.entries, []);
   });
 });
 

@@ -14,6 +14,10 @@ const { createPuzzleService } = require('../services/puzzleService');
 const { createGameService } = require('../services/gameService');
 const { createStatsService } = require('../services/statsService');
 const { createAdminAuth } = require('./middleware/adminAuth');
+const { createSessionMiddleware } = require('./middleware/session');
+const { createAuthProvider } = require('../auth');
+const { createAccountService } = require('../services/accountService');
+const { createAuthRouter } = require('./routes/auth');
 const { respond } = require('./middleware/respond');
 const { requestContext } = require('./middleware/requestContext');
 const { errorHandler, notFoundHandler } = require('./middleware/errors');
@@ -40,10 +44,14 @@ function createApp(overrides = {}) {
     overrides.attemptStore ||
     createAttemptStore({ ttlMs: config.play.attemptTtlMs, maxEntries: config.play.maxAttempts });
 
+  const authProvider = overrides.authProvider || createAuthProvider({ driver: config.auth.driver, logger });
+
   const puzzleService = createPuzzleService({ repository });
   const statsService = createStatsService({ repository, logger });
   const gameService = createGameService({ repository, puzzleService, attemptStore, logger });
+  const accountService = createAccountService({ repository, authProvider, logger });
   const adminAuth = createAdminAuth({ config, logger });
+  const session = createSessionMiddleware({ config, repository, logger });
 
   const app = express();
   app.set('view engine', 'ejs');
@@ -97,6 +105,10 @@ function createApp(overrides = {}) {
   app.locals.typeLabels = TYPE_LABELS;
   app.locals.difficultyLabels = DIFFICULTY_LABELS;
 
+  // Resolves the player session before anything renders, so every template and route can read
+  // res.locals.currentPlayer without asking for it.
+  app.use(session.attach());
+
   app.use((req, res, next) => {
     // Templates need to know whether to show the admin nav item and the sign-out button.
     res.locals.isAdmin = adminAuth.isAuthorized(req);
@@ -105,7 +117,11 @@ function createApp(overrides = {}) {
   });
 
   app.use('/api/admin', createAdminApiRouter({ puzzleService, statsService, adminAuth }));
-  app.use('/api', createApiRouter({ puzzleService, gameService, statsService, repository, limiters }));
+  app.use(
+    '/api',
+    createApiRouter({ puzzleService, gameService, statsService, accountService, repository, limiters })
+  );
+  app.use('/', createAuthRouter({ accountService, session, config, limiters }));
   app.use('/', createPagesRouter({ puzzleService, statsService, adminAuth, config }));
 
   app.get('/healthz', (req, res) => res.json({ ok: true, status: 'up' }));
@@ -116,7 +132,18 @@ function createApp(overrides = {}) {
   app.use(notFoundHandler());
   app.use(errorHandler({ logger }));
 
-  app.locals.container = { repository, puzzleService, gameService, statsService, attemptStore, logger, config };
+  app.locals.container = {
+    repository,
+    puzzleService,
+    gameService,
+    statsService,
+    accountService,
+    authProvider,
+    attemptStore,
+    session,
+    logger,
+    config,
+  };
 
   return app;
 }
@@ -137,6 +164,13 @@ function buildLimiters(config) {
       windowMs: config.rateLimit.windowMs,
       limit: config.rateLimit.submitMax,
       message: { ok: false, error: 'Too many answers too fast - take a breath.', code: 'rate_limited' },
+    }),
+    // Sending email costs money and can be used to harass an inbox - keep this one tight.
+    signIn: rateLimit({
+      ...common,
+      windowMs: 15 * 60 * 1000,
+      limit: 5,
+      message: { ok: false, error: 'Too many sign-in requests. Try again in a few minutes.', code: 'rate_limited' },
     }),
   };
 }

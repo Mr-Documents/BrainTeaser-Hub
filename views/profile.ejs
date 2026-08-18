@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <meta name="robots" content="noindex" />
+</head>
+<body class="page-profile">
+  <%- include('partials/navbar') %>
+
+  <main id="main" class="section shell">
+
+    <% if (welcome) { %>
+      <div class="callout callout--success" role="status">
+        <p class="callout__title">Welcome to <%= site.name %> 🎉</p>
+        <p>
+          Your account is ready and your points are now safe. We picked
+          <strong><%= profile.displayName %></strong> as your leaderboard name from your email -
+          change it below if you'd rather be somebody else.
+        </p>
+      </div>
+    <% } %>
+    <% if (saved) { %>
+      <div class="callout callout--success" role="status"><p>Saved. Your new name is live on the leaderboard.</p></div>
+    <% } %>
+
+    <header class="profile-head">
+      <span class="profile-head__avatar" aria-hidden="true"><%= profile.displayName.trim().charAt(0).toUpperCase() %></span>
+      <div class="profile-head__text">
+        <p class="eyebrow">Your account</p>
+        <h1 class="profile-head__name"><%= profile.displayName %></h1>
+        <p class="profile-head__meta">
+          <% if (profile.rank) { %>
+            Ranked <strong>#<%= profile.rank %></strong>
+          <% } else { %>
+            Not ranked yet - solve one puzzle to appear on the board
+          <% } %>
+          <% if (profile.createdAt) { %>
+            <span aria-hidden="true">·</span> Member since
+            <%= new Date(profile.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) %>
+          <% } %>
+        </p>
+      </div>
+      <a class="btn btn--primary" href="/play">Keep solving</a>
+    </header>
+
+    <ul class="stat-tiles">
+      <li class="stat-tile">
+        <span class="stat-tile__icon" aria-hidden="true">⭐</span>
+        <span class="stat-tile__value"><%= Number(profile.totalScore || 0).toLocaleString('en-US') %></span>
+        <span class="stat-tile__label">Points</span>
+      </li>
+      <li class="stat-tile">
+        <span class="stat-tile__icon" aria-hidden="true">✅</span>
+        <span class="stat-tile__value"><%= profile.solves || 0 %></span>
+        <span class="stat-tile__label">Solved</span>
+      </li>
+      <li class="stat-tile">
+        <span class="stat-tile__icon" aria-hidden="true">🔥</span>
+        <span class="stat-tile__value"><%= profile.currentStreak || 0 %></span>
+        <span class="stat-tile__label">Day streak</span>
+      </li>
+      <li class="stat-tile">
+        <span class="stat-tile__icon" aria-hidden="true">🏅</span>
+        <span class="stat-tile__value"><%= profile.bestStreak || 0 %></span>
+        <span class="stat-tile__label">Best streak</span>
+      </li>
+    </ul>
+
+    <div class="card-grid card-grid--2 profile-grid">
+
+      <section class="panel" aria-labelledby="name-heading">
+        <h2 class="panel__title" id="name-heading">Display name</h2>
+        <p class="muted">
+          The only thing other players see. Your email address never appears anywhere public.
+        </p>
+
+        <% if (error) { %><p class="form__message is-error" role="alert"><%= error %></p><% } %>
+
+        <form method="post" action="/profile/name" class="form form--stack" novalidate data-name-form>
+          <div class="field">
+            <label class="sr-only" for="displayName">Display name</label>
+            <input
+              type="text"
+              id="displayName"
+              name="displayName"
+              value="<%= profile.displayName %>"
+              maxlength="32"
+              required
+              autocomplete="nickname"
+              spellcheck="false"
+              data-name-input
+              data-current-name="<%= profile.displayName %>"
+              aria-describedby="name-help"
+            />
+            <p class="field__status" data-name-status aria-live="polite"></p>
+            <p class="field__help" id="name-help">
+              2-32 characters: letters, numbers, spaces and <code>. _ - '</code>
+            </p>
+          </div>
+          <button class="btn btn--primary" type="submit" data-name-submit>Save name</button>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="session-heading">
+        <h2 class="panel__title" id="session-heading">Sign-in details</h2>
+        <dl class="detail-list">
+          <div>
+            <dt>Email</dt>
+            <dd><%= profile.email || 'Not recorded' %></dd>
+          </div>
+          <div>
+            <dt>Password</dt>
+            <dd>None - you sign in with a link, so there is nothing to steal.</dd>
+          </div>
+          <div>
+            <dt>This session</dt>
+            <dd>Stays signed in for 30 days on this device.</dd>
+          </div>
+        </dl>
+        <form method="post" action="/signout">
+          <button class="btn btn--secondary btn--block" type="submit">Sign out</button>
+        </form>
+      </section>
+    </div>
+
+    <section class="panel panel--danger" aria-labelledby="danger-heading">
+      <h2 class="panel__title" id="danger-heading">Delete account</h2>
+      <p class="muted">
+        Removes your profile, points, streak and leaderboard entry permanently. The puzzles you
+        solved stay in the site-wide totals, but with no name attached. This cannot be undone.
+      </p>
+
+      <details class="disclosure disclosure--danger">
+        <summary>I want to delete my account</summary>
+        <form method="post" action="/profile/delete" class="form form--stack">
+          <div class="field">
+            <label for="confirm">
+              Type <strong><%= profile.displayName %></strong> to confirm
+            </label>
+            <input type="text" id="confirm" name="confirm" required autocomplete="off" spellcheck="false" />
+          </div>
+          <button class="btn btn--danger" type="submit">Delete my account permanently</button>
+        </form>
+      </details>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="/js/ui.js" defer></script>
+  <script src="/js/auth.js" defer></script>
+</body>
+</html>

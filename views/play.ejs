@@ -107,9 +107,18 @@
         </article>
 
         <div class="player-bar">
-          <div class="field">
-            <label for="username">Display name</label>
-            <input type="text" id="username" maxlength="32" placeholder="Anonymous" autocomplete="nickname" />
+          <div class="player-bar__identity">
+            <% if (isSignedIn) { %>
+              <p class="player-bar__who">
+                Playing as <a href="/profile"><strong><%= currentPlayer.displayName %></strong></a>
+              </p>
+              <p class="player-bar__note">Every solve is banked to your account.</p>
+            <% } else { %>
+              <p class="player-bar__who">Playing anonymously</p>
+              <p class="player-bar__note">
+                <a href="/signin?next=/play">Sign in</a> to save your score and keep a daily streak.
+              </p>
+            <% } %>
           </div>
           <dl class="player-bar__stats">
             <div><dt>Session</dt><dd id="session-points">0 pts</dd></div>
@@ -138,7 +147,7 @@
                 <% leaderboard.forEach(function (row, i) { %>
                   <tr<%= i === 0 ? ' class="is-top"' : '' %>>
                     <td><%= i + 1 %></td>
-                    <td><%= row.username %></td>
+                    <td><%= row.displayName %></td>
                     <td class="num"><%= Number(row.totalScore || 0).toLocaleString('en-US') %></td>
                   </tr>
                 <% }); %>
@@ -177,6 +186,7 @@
 
   <script id="bootstrap-data" type="application/json"><%- JSON.stringify({
     mode: mode,
+    isSignedIn: isSignedIn,
     challengePuzzleId: challengePuzzleId,
     stats: stats,
     typeLabels: typeLabels,

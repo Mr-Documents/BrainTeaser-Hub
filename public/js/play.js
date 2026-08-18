@@ -8,8 +8,8 @@
   const { api, toast, el, escapeHtml, storage, readBootstrap, copyToClipboard } = window.BTH;
   const boot = readBootstrap();
 
-  const NAME_KEY = 'bth:username';
   const SEEN_KEY = 'bth:seen';
+  const NUDGE_KEY = 'bth:signin-nudged';
 
   const dom = {
     loading: el('puzzle-loading'),
@@ -34,7 +34,6 @@
     filterType: el('filter-type'),
     filterDifficulty: el('filter-difficulty'),
     resetSeen: el('btn-reset-seen'),
-    username: el('username'),
     sessionPoints: el('session-points'),
     sessionSolves: el('session-solves'),
     sessionStreak: el('session-streak'),
@@ -150,7 +149,7 @@
     dom.leaderboardBody.innerHTML = entries
       .map(
         (row, i) =>
-          `<tr${i === 0 ? ' class="is-top"' : ''}><td>${i + 1}</td><td>${escapeHtml(row.username)}</td>` +
+          `<tr${i === 0 ? ' class="is-top"' : ''}><td>${i + 1}</td><td>${escapeHtml(row.displayName)}</td>` +
           `<td class="num">${Number(row.totalScore || 0).toLocaleString('en-US')}</td></tr>`
       )
       .join('');
@@ -372,12 +371,8 @@
     try {
       const result = await api('/api/submit', {
         method: 'POST',
-        body: {
-          puzzleId: state.puzzle.id,
-          answer,
-          username: dom.username.value.trim() || 'Anonymous',
-          attemptToken: state.attemptToken,
-        },
+        // No username in the body - the server reads the signed session cookie instead.
+        body: { puzzleId: state.puzzle.id, answer, attemptToken: state.attemptToken },
       });
 
       if (!result.correct) {
@@ -406,6 +401,12 @@
         state.session.streak = result.streak || state.session.streak;
         renderSession();
         toast(result.message, 'success');
+
+        // One gentle prompt, after they have something worth keeping - never a wall.
+        if (!boot.isSignedIn && state.session.solves === 2 && !storage.get(NUDGE_KEY)) {
+          storage.set(NUDGE_KEY, true);
+          toast(`${state.session.points} points this session. Sign in to keep them.`, 'info', 7000);
+        }
       }
       if (result.leaderboard) renderLeaderboard(result.leaderboard);
       if (result.stats) updateCharts(result.stats);
@@ -457,11 +458,6 @@
     })
   );
 
-  dom.username?.addEventListener('change', () => {
-    const name = dom.username.value.trim();
-    storage.set(NAME_KEY, name);
-  });
-
   document.addEventListener('keydown', (event) => {
     const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName);
     if (typing || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -474,8 +470,6 @@
 
   // --------------------------------------------------------------------- boot
 
-  const savedName = storage.get(NAME_KEY, '');
-  if (savedName && dom.username) dom.username.value = savedName;
   renderSession();
 
   // Chart.js is deferred; wait for load so the constructor exists.

@@ -36,8 +36,8 @@ npm run dev
 2. **Project Settings → API**: copy the **Project URL** and the **`service_role`** key into `.env`.
    The service-role key bypasses row level security and must stay server-side - never ship it to a
    browser, never commit it.
-3. Apply the schema, either way:
-   - **Dashboard**: SQL Editor → New query → paste [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) → Run.
+3. Apply the schema **in order**, either way:
+   - **Dashboard**: SQL Editor → New query → paste [`0001_init.sql`](supabase/migrations/0001_init.sql), Run → then [`0002_auth.sql`](supabase/migrations/0002_auth.sql), Run.
    - **CLI**: `supabase link --project-ref <ref>` then `supabase db push`.
 4. `npm run db:push` to confirm every table and view landed.
 5. `npm run db:seed` to load the puzzle catalogue.
@@ -74,6 +74,7 @@ directly and exhaustively.
 
 ```
 src/
+├── auth/            Sign-in behind one contract: supabase (real) or local (log + tests).
 ├── domain/          Pure rules - no I/O, no framework. Deterministic and fully unit tested.
 │   ├── scoring.js         penalties, speed bonus, streak multiplier
 │   ├── answerMatcher.js   forgiving answer comparison (exact / partial / regex)
@@ -83,7 +84,7 @@ src/
 ├── repositories/    Storage behind one contract.
 │   ├── jsonRepository.js      files (default) - also the in-memory driver for tests
 │   └── supabaseRepository.js  Postgres via supabase-js
-├── services/        Use cases: puzzleService, gameService, statsService
+├── services/        Use cases: puzzleService, gameService, statsService, accountService
 ├── http/            Express only - app factory, routes, middleware
 └── server.js        Entry point: config validation, listen, graceful shutdown
 ```
@@ -118,6 +119,40 @@ total  = round((earned + speedBonus) × streakMultiplier)
 Answer matching is deliberately forgiving: case, accents, punctuation, a leading `a/an/the` and
 spelled-out numbers are normalised away, so `Echo`, `an echo`, `ECHO!` and `écho` are one answer,
 and `8` matches `eight`.
+
+---
+
+## Accounts
+
+Sign-in is **optional and never gates play**. Anonymous visitors get every puzzle, every hint, the
+timer, the score and shareable links - they just are not ranked, because a leaderboard entry has to
+belong to somebody.
+
+|                                  | Anonymous | Signed in |
+| -------------------------------- | --------- | --------- |
+| Play, hints, timer, share        | yes       | yes       |
+| Sees what a solve was worth      | yes       | yes       |
+| Ranked on the leaderboard        | no        | yes       |
+| Daily streak multiplier          | no        | yes       |
+| Score follows you across devices | no        | yes       |
+
+**How it works.** Passwordless magic link, driven entirely from the server: the browser never loads
+the Supabase SDK and never holds a Supabase JWT. We verify the emailed token server-side and issue
+our own signed, `httpOnly`, 30-day session cookie. That keeps the CSP free of third-party
+`connect-src`, puts no token within reach of an XSS, and makes revocation a matter of rotating
+`SESSION_SECRET`.
+
+The scoring identity comes from that cookie, never from the request body - a username in a
+`/api/submit` payload is ignored outright, which is what closes the old "type any name, take their
+points" hole.
+
+Display names are unique case-insensitively, validated, and collision-resolved on signup
+(`ada`, `ada2`, …). Emails are never exposed: the public leaderboard reads a view that does not
+contain the column.
+
+**Local development** runs `AUTH_DRIVER=local`, which prints the sign-in link to the server log
+instead of emailing it. Production refuses to boot on that driver, and refuses to boot without a
+`SESSION_SECRET`.
 
 ---
 

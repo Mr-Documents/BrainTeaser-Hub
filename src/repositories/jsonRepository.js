@@ -202,24 +202,46 @@ function createJsonRepository({ dataDir, persist = true, seed = null } = {}) {
     },
 
     // ---------------------------------------------------------------- players
+    // Keyed on the authenticated user id. Anonymous play never reaches this table.
 
-    async getPlayer(username) {
-      return clone(state.players.find((p) => p.username === username) || null);
+    async getPlayer(userId) {
+      return clone(state.players.find((p) => p.userId === userId) || null);
     },
 
-    async recordSolve({ username, pointsEarned, solvedAt = new Date().toISOString(), streak = null }) {
-      let player = state.players.find((p) => p.username === username);
+    async findPlayerByDisplayName(displayName) {
+      const needle = String(displayName || '').toLowerCase();
+      return clone(state.players.find((p) => String(p.displayName).toLowerCase() === needle) || null);
+    },
+
+    /** Create the player row on first sign-in, or refresh the profile on later ones. */
+    async upsertPlayer({ userId, email = null, displayName }) {
+      let player = state.players.find((p) => p.userId === userId);
       if (!player) {
         player = {
-          username,
+          userId,
+          email,
+          displayName,
           totalScore: 0,
           solves: 0,
           currentStreak: 0,
           bestStreak: 0,
           lastSolvedAt: null,
-          createdAt: solvedAt,
+          createdAt: new Date().toISOString(),
         };
         state.players.push(player);
+      } else {
+        if (email) player.email = email;
+        if (displayName) player.displayName = displayName;
+      }
+      savePlayers();
+      return clone(player);
+    },
+
+    async recordSolve({ userId, displayName, pointsEarned, solvedAt = new Date().toISOString(), streak = null }) {
+      let player = state.players.find((p) => p.userId === userId);
+      if (!player) {
+        player = await this.upsertPlayer({ userId, displayName });
+        player = state.players.find((p) => p.userId === userId);
       }
       player.totalScore = (player.totalScore || 0) + Math.max(0, pointsEarned);
       player.solves = (player.solves || 0) + 1;
@@ -230,8 +252,16 @@ function createJsonRepository({ dataDir, persist = true, seed = null } = {}) {
       return clone(player);
     },
 
-    async resetStreak(username) {
-      const player = state.players.find((p) => p.username === username);
+    async deletePlayer(userId) {
+      const before = state.players.length;
+      state.players = state.players.filter((p) => p.userId !== userId);
+      if (state.players.length === before) return false;
+      savePlayers();
+      return true;
+    },
+
+    async resetStreak(userId) {
+      const player = state.players.find((p) => p.userId === userId);
       if (!player) return null;
       player.currentStreak = 0;
       savePlayers();
@@ -242,15 +272,18 @@ function createJsonRepository({ dataDir, persist = true, seed = null } = {}) {
       const rows = [...state.players]
         .sort((a, b) => {
           const diff = (b.totalScore || 0) - (a.totalScore || 0);
-          return diff !== 0 ? diff : String(a.username).localeCompare(String(b.username));
+          return diff !== 0 ? diff : String(a.displayName).localeCompare(String(b.displayName));
         })
-        .slice(0, limit);
+        .slice(0, limit)
+        // The email is never part of a public read model.
+        .map(({ email, userId, ...publicFields }) => publicFields);
       return clone(rows);
     },
 
     // ------------------------------------------------------------------ stats
 
     async recordAttempt({ correct, puzzle, pointsEarned = 0 }) {
+      // userId is accepted by the contract but the file driver only keeps running totals.
       const totals = state.attemptTotals;
       totals.totalAttempts += 1;
       if (correct) {

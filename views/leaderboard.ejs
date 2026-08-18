@@ -36,7 +36,7 @@
             <% leaderboard.forEach(function (row, i) { %>
               <tr<%= i === 0 ? ' class="is-top"' : '' %>>
                 <td><%= i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1 %></td>
-                <td class="cell-name"><%= row.username %></td>
+                <td class="cell-name"><%= row.displayName %></td>
                 <td class="num"><%= Number(row.totalScore || 0).toLocaleString('en-US') %></td>
                 <td class="num"><%= row.solves || 0 %></td>
                 <td class="num"><%= row.currentStreak || 0 %></td>

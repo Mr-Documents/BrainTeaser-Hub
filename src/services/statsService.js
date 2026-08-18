@@ -51,15 +51,6 @@ function createStatsService({ repository, cacheTtlMs = 5_000, logger = console }
         return [];
       }
     },
-
-    /** The profile card: rank plus totals for one display name. */
-    async getPlayerProfile(username) {
-      const player = await repository.getPlayer(username);
-      if (!player) return null;
-      const top = await repository.getLeaderboard(100);
-      const index = top.findIndex((p) => p.username === username);
-      return { ...player, rank: index === -1 ? null : index + 1 };
-    },
   };
 }
 

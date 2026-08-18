@@ -4,6 +4,7 @@ const { createApp } = require('../../src/http/app');
 const { createJsonRepository } = require('../../src/repositories/jsonRepository');
 const { config } = require('../../src/config');
 const { createLogger } = require('../../src/lib/logger');
+const { createLocalAuthProvider } = require('../../src/auth/localAuthProvider');
 
 /** A minimal, valid puzzle. Override any field per test. */
 function makePuzzle(overrides = {}) {
@@ -33,6 +34,12 @@ function makePuzzle(overrides = {}) {
  */
 function buildTestApp({ puzzles = [makePuzzle()], adminAuth = false, adminToken = 'test-token' } = {}) {
   const repository = createJsonRepository({ persist: false, seed: { puzzles } });
+  // Captures the magic links this app issues, so a test can "click" one without an inbox.
+  const issuedLinks = [];
+  const authProvider = createLocalAuthProvider({
+    logger: { warn() {}, info() {} },
+    onLink: (link) => issuedLinks.push(link),
+  });
 
   const testConfig = {
     ...config,
@@ -41,6 +48,7 @@ function buildTestApp({ puzzles = [makePuzzle()], adminAuth = false, adminToken 
     isTest: true,
     logLevel: 'silent',
     admin: { ...config.admin, required: adminAuth, token: adminToken },
+    auth: { ...config.auth, driver: 'local', sessionSecret: 'test-session-secret' },
     rateLimit: { ...config.rateLimit, enabled: false },
     data: { ...config.data, driver: 'memory' },
   };
@@ -48,10 +56,33 @@ function buildTestApp({ puzzles = [makePuzzle()], adminAuth = false, adminToken 
   const app = createApp({
     config: testConfig,
     repository,
+    authProvider,
     logger: createLogger({ level: 'silent' }),
   });
 
-  return { app, repository, config: testConfig, adminToken };
+  return { app, repository, authProvider, issuedLinks, config: testConfig, adminToken };
 }
 
-module.exports = { buildTestApp, makePuzzle };
+/**
+ * Drive the real sign-in flow end to end and return the session cookie.
+ * Uses the same routes a browser would: request a link, then follow it.
+ *
+ * @returns {Promise<{ cookie: string, displayName: string }>}
+ */
+async function signIn(app, issuedLinks, email = 'ada@example.com') {
+  const request = require('supertest');
+  await request(app).post('/signin').send({ email }).expect(200);
+
+  const issued = issuedLinks.at(-1);
+  if (!issued) throw new Error('no sign-in link was issued');
+
+  const callbackPath = issued.link.slice(issued.link.indexOf('/auth/callback'));
+  const res = await request(app).get(callbackPath).expect(302);
+
+  const cookie = (res.headers['set-cookie'] || []).find((c) => c.startsWith('bth_session='));
+  if (!cookie) throw new Error('sign-in did not set a session cookie');
+
+  return { cookie: cookie.split(';')[0], redirectedTo: res.headers.location };
+}
+
+module.exports = { buildTestApp, makePuzzle, signIn };

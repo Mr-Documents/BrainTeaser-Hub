@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <meta name="robots" content="noindex" />
+</head>
+<body class="page-auth">
+  <%- include('partials/navbar') %>
+
+  <main id="main" class="auth">
+    <div class="auth__inner shell">
+
+      <!-- ------------------------------------------------------- form card -->
+      <section class="auth-card" aria-labelledby="auth-heading">
+        <% if (sent) { %>
+
+          <div class="auth-card__head">
+            <span class="auth-card__icon auth-card__icon--sent" aria-hidden="true">📬</span>
+            <h1 class="auth-card__title" id="auth-heading">Check your inbox</h1>
+            <p class="auth-card__lede">
+              We sent a sign-in link to<br />
+              <strong class="auth-card__email"><%= email %></strong>
+            </p>
+          </div>
+
+          <ol class="auth-steps">
+            <li>Open the email from <%= site.name %>.</li>
+            <li>Tap the link inside - it signs you straight in.</li>
+            <li>It works once, and expires after 15 minutes.</li>
+          </ol>
+
+          <% if (devLink) { %>
+            <div class="auth-devlink">
+              <p class="auth-devlink__label">Local auth is on, so no email was actually sent.</p>
+              <a class="btn btn--primary btn--block" href="<%= devLink %>">Use the sign-in link</a>
+            </div>
+          <% } %>
+
+          <div class="auth-mailboxes" data-mail-shortcuts hidden>
+            <p class="auth-mailboxes__label">Open your mail</p>
+            <div class="auth-mailboxes__row">
+              <a class="btn btn--secondary btn--sm" href="https://mail.google.com" target="_blank" rel="noopener noreferrer">Gmail</a>
+              <a class="btn btn--secondary btn--sm" href="https://outlook.live.com/mail" target="_blank" rel="noopener noreferrer">Outlook</a>
+              <a class="btn btn--secondary btn--sm" href="https://mail.yahoo.com" target="_blank" rel="noopener noreferrer">Yahoo</a>
+            </div>
+          </div>
+
+          <form method="post" action="/<%= mode %>" class="auth-resend" data-resend-form>
+            <input type="hidden" name="mode" value="<%= mode %>" />
+            <input type="hidden" name="next" value="<%= next %>" />
+            <input type="hidden" name="email" value="<%= email %>" />
+            <p class="auth-resend__text">Nothing arrived? Check spam first.</p>
+            <button class="btn btn--ghost btn--block" type="submit" data-resend-button>
+              Send another link<span data-resend-timer></span>
+            </button>
+          </form>
+
+          <div class="auth-card__foot">
+            <a href="/<%= mode %>?next=<%= encodeURIComponent(next) %>">Use a different address</a>
+            <span aria-hidden="true">·</span>
+            <a href="/play">Keep playing without an account</a>
+          </div>
+
+        <% } else { %>
+
+          <div class="auth-card__head">
+            <span class="auth-card__icon" aria-hidden="true">🧠</span>
+            <h1 class="auth-card__title" id="auth-heading">
+              <%= mode === 'signup' ? 'Create your account' : 'Sign in' %>
+            </h1>
+            <p class="auth-card__lede">
+              <% if (mode === 'signup') { %>
+                Takes one click and no password. Already have an account? The same link signs you in.
+              <% } else { %>
+                Enter your email and we'll send you a link. New here? It creates your account too.
+              <% } %>
+            </p>
+          </div>
+
+          <% if (error) { %>
+            <p class="form__message is-error" role="alert"><%= error %></p>
+          <% } %>
+
+          <form method="post" action="/<%= mode %>" class="auth-form" novalidate data-auth-form>
+            <input type="hidden" name="mode" value="<%= mode %>" />
+            <input type="hidden" name="next" value="<%= next %>" />
+
+            <div class="field">
+              <label for="email">Email address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value="<%= email %>"
+                required
+                autocomplete="email"
+                inputmode="email"
+                autocapitalize="none"
+                autocorrect="off"
+                spellcheck="false"
+                enterkeyhint="send"
+                placeholder="you@example.com"
+                aria-describedby="email-help"
+                autofocus
+              />
+              <p class="field__error" data-email-error hidden></p>
+              <p class="field__help" id="email-help">No password to remember, lose, or have stolen.</p>
+            </div>
+
+            <button class="btn btn--primary btn--block" type="submit" data-submit-button>
+              <span data-submit-label>Email me a sign-in link</span>
+            </button>
+          </form>
+
+          <p class="auth-alt">
+            <% if (mode === 'signup') { %>
+              Already have an account? <a href="/signin?next=<%= encodeURIComponent(next) %>">Sign in</a>
+            <% } else { %>
+              First time here? <a href="/signup?next=<%= encodeURIComponent(next) %>">Create an account</a>
+            <% } %>
+          </p>
+
+          <div class="auth-divider" role="separator"><span>or</span></div>
+
+          <a class="btn btn--ghost btn--block" href="/play">Play without an account</a>
+
+        <% } %>
+      </section>
+
+      <!-- --------------------------------------------------------- why bother -->
+      <aside class="auth-aside" aria-labelledby="why-heading">
+        <h2 class="auth-aside__title" id="why-heading">Why sign in?</h2>
+        <p class="auth-aside__lede">
+          It's entirely optional - every puzzle, hint and share link works without an account.
+          Signing in adds four things:
+        </p>
+        <ul class="auth-benefits">
+          <li>
+            <span class="auth-benefits__icon" aria-hidden="true">🏆</span>
+            <span><strong>A place on the leaderboard.</strong> Your points are yours, and nobody else can claim them.</span>
+          </li>
+          <li>
+            <span class="auth-benefits__icon" aria-hidden="true">🔥</span>
+            <span><strong>Daily streaks.</strong> Solve on consecutive days for a multiplier up to x1.5.</span>
+          </li>
+          <li>
+            <span class="auth-benefits__icon" aria-hidden="true">📱</span>
+            <span><strong>Any device.</strong> Start on your laptop, carry on from your phone.</span>
+          </li>
+          <li>
+            <span class="auth-benefits__icon" aria-hidden="true">📊</span>
+            <span><strong>Your history.</strong> Points, solves and your best streak, all in one place.</span>
+          </li>
+        </ul>
+
+        <div class="auth-trust">
+          <p class="auth-trust__title">What we do with your email</p>
+          <ul>
+            <li>Send you sign-in links. That's it.</li>
+            <li>It is never shown on the leaderboard or to other players.</li>
+            <li>No marketing, no passwords stored, no third-party trackers.</li>
+            <li>Delete your account any time from your profile.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="/js/ui.js" defer></script>
+  <script src="/js/auth.js" defer></script>
+</body>
+</html>

@@ -68,7 +68,7 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
      * Grade an answer, and on a correct first solve award points and update the leaderboard.
      * @returns {Promise<object>} always resolves; `correct` says how it went.
      */
-    async submitAnswer({ puzzleId, answer, username, attemptToken }) {
+    async submitAnswer({ puzzleId, answer, attemptToken, player = null }) {
       if (!puzzleId) throw new BadRequestError('puzzleId is required');
       if (answer === undefined || answer === null) throw new BadRequestError('answer is required');
 
@@ -80,12 +80,14 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
         throw new BadRequestError('Your session for this puzzle expired - load the puzzle again');
       }
 
-      const player = normalizeUsername(username);
+      // `player` is the session's account or null. A name can no longer be claimed in the body,
+      // so a score always belongs to whoever actually signed in.
+      const userId = player?.userId || null;
       const { correct } = matchAnswer(String(answer), puzzle);
 
       if (!correct) {
         const wrongSubmissions = attemptStore.recordWrong(attemptToken, puzzleId);
-        await repository.recordAttempt({ correct: false, puzzle, username: player });
+        await repository.recordAttempt({ correct: false, puzzle, userId });
         return {
           correct: false,
           message: encourage(wrongSubmissions),
@@ -111,8 +113,9 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
         };
       }
 
-      const existingPlayer = await repository.getPlayer(player);
-      const streak = nextStreak(existingPlayer);
+      // A streak only means something when it belongs to an account; an anonymous solve is
+      // always treated as a first solve so it cannot inflate anybody's multiplier.
+      const streak = player ? nextStreak(player) : 0;
       const score = computeScore({
         basePoints: puzzle.basePoints,
         hintsRevealed,
@@ -121,20 +124,29 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
         streak,
       });
 
-      const [savedPlayer] = await Promise.all([
-        repository.recordSolve({ username: player, pointsEarned: score.total, streak }),
-        repository
-          .recordAttempt({
-            correct: true,
-            puzzle,
+      const recordAttempt = repository
+        .recordAttempt({
+          correct: true,
+          puzzle,
+          pointsEarned: score.total,
+          userId,
+          hintsUsed: hintsRevealed,
+          wrongAttempts: wrongSubmissions,
+          durationMs,
+        })
+        .catch((err) => logger.warn?.('failed to record attempt stats', { error: err.message }));
+
+      // Only a signed-in solve is banked to a profile and the leaderboard. Anonymous players
+      // still get their points back for the session tally, and still move the global stats.
+      const savedPlayer = player
+        ? await repository.recordSolve({
+            userId: player.userId,
+            displayName: player.displayName,
             pointsEarned: score.total,
-            username: player,
-            hintsUsed: hintsRevealed,
-            wrongAttempts: wrongSubmissions,
-            durationMs,
+            streak,
           })
-          .catch((err) => logger.warn?.('failed to record attempt stats', { error: err.message })),
-      ]);
+        : null;
+      await recordAttempt;
 
       const [leaderboard, stats] = await Promise.all([repository.getLeaderboard(10), repository.getStats()]);
 
@@ -148,8 +160,9 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
         durationMs,
         streak,
         player: savedPlayer,
+        ranked: Boolean(savedPlayer),
         explanation: puzzle.explanation || null,
-        message: buildSolveMessage(score, streak),
+        message: buildSolveMessage(score, streak, Boolean(player)),
         leaderboard,
         stats,
       };
@@ -166,11 +179,12 @@ function encourage(wrongSubmissions) {
   return 'Nope - think it through once more.';
 }
 
-function buildSolveMessage(score, streak) {
+function buildSolveMessage(score, streak, isRanked) {
   if (score.total === 0) return 'Correct - but hints and wrong guesses left this one at 0 points.';
   const parts = [`Correct! +${score.total} points`];
   if (score.speedBonus > 0) parts.push(`${score.speedBonus} speed bonus`);
   if (streak > 1) parts.push(`${streak}-day streak (x${score.streakMultiplier})`);
+  if (!isRanked) parts.push('sign in to keep it');
   return parts.join(' · ');
 }
 

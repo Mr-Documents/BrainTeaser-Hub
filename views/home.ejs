@@ -37,7 +37,7 @@
                 <% leaderboard.forEach(function (row, i) { %>
                   <li class="podium__row<%= i === 0 ? ' is-first' : '' %>">
                     <span class="podium__rank" aria-hidden="true"><%= i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1 %></span>
-                    <span class="podium__name"><%= row.username %></span>
+                    <span class="podium__name"><%= row.displayName %></span>
                     <span class="podium__score"><%= Number(row.totalScore || 0).toLocaleString('en-US') %></span>
                   </li>
                 <% }); %>
