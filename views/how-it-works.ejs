@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main id="main" class="section shell">
+    <header class="section__head section__head--page">
+      <p class="eyebrow">The rules</p>
+      <h1 class="section__title">How scoring works</h1>
+      <p class="section__lede">Every puzzle is worth a base score. What you do next moves it up or down.</p>
+    </header>
+
+    <div class="card-grid card-grid--2">
+      <article class="panel">
+        <h2 class="panel__title">Base points</h2>
+        <p>Each puzzle carries a base value set by its author, roughly tracking its level:</p>
+        <ul class="list">
+          <li><span class="badge badge--easy">Easy</span> around 70–90 points</li>
+          <li><span class="badge badge--medium">Medium</span> around 100–150 points</li>
+          <li><span class="badge badge--hard">Hard</span> around 160–240 points</li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <h2 class="panel__title">Penalties</h2>
+        <p>Applied first, and the result never drops below zero.</p>
+        <ul class="list">
+          <li><strong>−15</strong> for every hint you reveal</li>
+          <li><strong>−10</strong> for every wrong submission</li>
+        </ul>
+        <p class="muted">Hints and wrong guesses are counted on the server against your play session, so reloading the page will not reset them.</p>
+      </article>
+
+      <article class="panel">
+        <h2 class="panel__title">Bonuses</h2>
+        <p>Applied after penalties, so a heavily hinted solve can never out-earn a clean one.</p>
+        <ul class="list">
+          <li><strong>Speed bonus</strong> — up to 25% of base for solving inside 20 seconds, tapering to zero at two minutes.</li>
+          <li><strong>Streak multiplier</strong> — +5% per consecutive day solved, capped at ×1.5.</li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <h2 class="panel__title">The formula</h2>
+        <pre class="code-block"><code>earned = max(0, base − 15×hints − 10×wrong)
+total  = round((earned + speedBonus) × streakMultiplier)</code></pre>
+        <p class="muted">A puzzle already solved in the current session scores zero — load a new one to keep earning.</p>
+      </article>
+
+      <article class="panel">
+        <h2 class="panel__title">Answer matching</h2>
+        <p>Answers are graded generously. All of these are treated as the same answer:</p>
+        <ul class="list">
+          <li><code>Echo</code> · <code>an echo</code> · <code>ECHO!</code> · <code>écho</code></li>
+          <li><code>8</code> · <code>eight</code></li>
+        </ul>
+        <p class="muted">Case, accents, punctuation, a leading "a/an/the" and spelled-out numbers are all normalised away before comparing.</p>
+      </article>
+
+      <article class="panel">
+        <h2 class="panel__title">Daily streaks</h2>
+        <p>Solve at least one puzzle each UTC day to extend your streak. Miss a day and it restarts at 1 — solving twice in one day holds it steady rather than doubling it.</p>
+        <p class="panel__cta"><a class="btn btn--primary" href="/play">Start solving</a></p>
+      </article>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="/js/ui.js" defer></script>
+</body>
+</html>

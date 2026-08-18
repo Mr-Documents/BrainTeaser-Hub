@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <meta name="robots" content="noindex" />
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main id="main" class="section shell">
+    <section class="panel panel--centered">
+      <p class="error-code"><%= status %></p>
+      <h1 class="section__title"><%= status === 404 ? 'Nothing here' : 'Something broke' %></h1>
+      <p class="section__lede"><%= message %></p>
+      <% if (detail) { %><p class="muted"><%= detail %></p><% } %>
+      <p class="panel__cta">
+        <a class="btn btn--primary" href="/play">Play a puzzle</a>
+        <a class="btn btn--ghost" href="/">Go home</a>
+      </p>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="/js/ui.js" defer></script>
+</body>
+</html>

@@ -1,6 +1,15 @@
 <footer class="site-footer">
-  <div class="site-footer-inner">
-    <p class="site-footer-brand">Brain Teaser Hub</p>
-    <p class="site-footer-meta">Interactive puzzles · Leaderboard · Live stats</p>
+  <div class="shell site-footer__inner">
+    <div class="site-footer__brand">
+      <p class="site-footer__name"><%= site.name %></p>
+      <p class="site-footer__tag">Curated puzzles · Hints · Streaks · Live leaderboard</p>
+    </div>
+    <nav class="site-footer__nav" aria-label="Footer">
+      <a href="/play">Play</a>
+      <a href="/daily">Daily challenge</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="/how-it-works">How scoring works</a>
+    </nav>
   </div>
 </footer>
+<div class="toast-stack" id="toast-stack" role="status" aria-live="polite" aria-atomic="false"></div>

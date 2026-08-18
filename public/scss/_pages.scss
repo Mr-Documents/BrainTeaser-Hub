@@ -1,0 +1,730 @@
+@use 'tokens' as *;
+
+// ----------------------------------------------------------------- home: hero
+
+.hero {
+  padding-block: clamp(2rem, 6vw, 4.5rem);
+}
+
+.hero__inner {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+
+  @include from($bp-xl) {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  }
+}
+
+.hero__title {
+  margin-bottom: var(--s-4);
+}
+
+.hero__title-accent {
+  background: linear-gradient(120deg, var(--indigo-bright), var(--emerald));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero__lede {
+  max-width: 40rem;
+  font-size: clamp(1rem, 0.96rem + 0.3vw, 1.12rem);
+  color: var(--ink-muted);
+  margin-bottom: var(--s-5);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+
+  .btn {
+    flex: 1 1 12rem;
+  }
+
+  @include from($bp-sm) {
+    .btn {
+      flex: 0 0 auto;
+    }
+  }
+}
+
+.hero__panel {
+  min-width: 0;
+}
+
+.podium {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.podium__row {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+
+  &.is-first {
+    background: var(--accent-soft);
+  }
+}
+
+.podium__rank {
+  font-size: 0.95rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+.podium__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium__score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+// ------------------------------------------------------------------ play page
+
+.play {
+  padding-block: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.play__shell {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+
+  @include from($bp-xl) {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+}
+
+.play__main,
+.play__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.mode-banner {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  font-size: 0.9rem;
+  border: 1px solid var(--border-soft);
+  background: var(--surface-2);
+  color: var(--ink-muted);
+
+  &--daily {
+    background: color-mix(in srgb, var(--sky) 12%, transparent);
+    border-color: color-mix(in srgb, var(--sky) 32%, transparent);
+  }
+
+  &--challenge {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--indigo) 34%, transparent);
+  }
+}
+
+.play__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: center;
+
+  .field--inline {
+    flex: 1 1 9rem;
+  }
+
+  select {
+    flex: 1;
+  }
+
+  #btn-reset-seen {
+    flex: 1 1 auto;
+  }
+
+  @include from($bp-md) {
+    #btn-reset-seen {
+      flex: 0 0 auto;
+      margin-left: auto;
+    }
+  }
+}
+
+// --------------------------------------------------------------- puzzle card
+
+.puzzle {
+  position: relative;
+  padding: clamp(1.1rem, 3.5vw, 2rem);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: border-color var(--speed) var(--ease);
+
+  // A colour bar at the top edge is the fastest read of "right" or "wrong".
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: transparent;
+    transition: background var(--speed) var(--ease);
+  }
+
+  &.is-correct {
+    border-color: color-mix(in srgb, var(--success) 45%, transparent);
+    &::before {
+      background: var(--success);
+    }
+  }
+
+  &.is-wrong {
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+    &::before {
+      background: var(--danger);
+    }
+  }
+
+  &.shake {
+    animation: shake 380ms var(--ease);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.puzzle__loading-text {
+  margin: var(--s-4) 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+
+  &.is-error {
+    color: var(--danger);
+    font-weight: 600;
+  }
+}
+
+.puzzle__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+
+  &.is-hot {
+    color: var(--success);
+  }
+  &.is-cold {
+    opacity: 0.55;
+  }
+}
+
+.timer__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s infinite var(--ease);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.puzzle__question {
+  font-size: clamp(1.12rem, 1rem + 1vw, 1.5rem);
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--ink-strong);
+  margin-bottom: var(--s-5);
+}
+
+.hints {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.hint {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  font-size: 0.92rem;
+  background: var(--warn-soft);
+  border-left: 3px solid var(--warn);
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 220ms var(--ease),
+    transform 220ms var(--ease);
+
+  &.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hint__num {
+  display: inline-block;
+  margin-right: var(--s-2);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--warn);
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+
+  @include from($bp-sm) {
+    flex-direction: row;
+  }
+}
+
+.answer__input {
+  flex: 1;
+  min-height: 48px;
+  font-size: 1.02rem;
+}
+
+.answer__submit {
+  min-height: 48px;
+
+  @include from($bp-sm) {
+    flex: 0 0 auto;
+    min-width: 7rem;
+  }
+}
+
+.feedback {
+  margin: 0 0 var(--s-3);
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-height: 1.4rem;
+
+  &.is-success {
+    color: var(--success);
+  }
+  &.is-error {
+    color: var(--danger);
+  }
+}
+
+.explanation {
+  margin: 0 0 var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--success-soft);
+  border-left: 3px solid var(--success);
+  font-size: 0.92rem;
+}
+
+.puzzle__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+
+  .btn {
+    flex: 1 1 8rem;
+  }
+
+  @include from($bp-md) {
+    .btn {
+      flex: 0 0 auto;
+    }
+  }
+}
+
+.player-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: 1px solid var(--border-soft);
+
+  @include from($bp-md) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .field {
+    flex: 1 1 14rem;
+    max-width: 22rem;
+  }
+}
+
+.player-bar__stats {
+  display: flex;
+  gap: var(--s-5);
+  margin: 0;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  dt {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ink-strong);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.shortcuts {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-align: center;
+
+  // Keyboard hints are noise on a device without a keyboard.
+  @media (pointer: coarse) {
+    display: none;
+  }
+}
+
+// --------------------------------------------------------------------- charts
+
+.charts {
+  display: grid;
+  gap: var(--s-5);
+  grid-template-columns: minmax(0, 1fr);
+
+  @include from($bp-md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include from($bp-xl) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.chart {
+  margin: 0;
+  min-width: 0;
+
+  figcaption {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin-bottom: var(--s-2);
+  }
+}
+
+.chart__canvas {
+  position: relative;
+  width: 100%;
+  height: 150px;
+
+  &--pie {
+    height: 200px;
+  }
+
+  canvas {
+    width: 100% !important;
+  }
+}
+
+// ------------------------------------------------------------ studio (admin)
+
+.studio {
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+.studio__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+
+  @include from($bp-lg) {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.studio__title {
+  margin-bottom: var(--s-2);
+}
+
+.studio__lede {
+  margin: 0;
+  color: var(--ink-muted);
+  max-width: 42rem;
+}
+
+.studio__head-actions {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+
+  form {
+    margin: 0;
+  }
+}
+
+.studio__grid {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+
+  @include from($bp-xl) {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+}
+
+.studio__filters {
+  display: grid;
+  gap: var(--s-2);
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: var(--s-4);
+
+  @include from($bp-sm) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+}
+
+.tester {
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+  border: 1px dashed var(--border);
+}
+
+.tester__title {
+  margin: 0 0 var(--s-1);
+  font-size: 0.95rem;
+}
+
+.tester__lede {
+  margin: 0 0 var(--s-3);
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+
+.tester__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+
+  @include from($bp-sm) {
+    flex-direction: row;
+  }
+
+  input {
+    flex: 1;
+  }
+}
+
+.tester__results {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.tester__result {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+
+  code {
+    word-break: break-word;
+  }
+}
+
+.tester__verdict {
+  font-weight: 800;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 0.1rem var(--s-2);
+  border-radius: var(--r-pill);
+
+  .is-pass & {
+    color: var(--success);
+    background: var(--success-soft);
+  }
+  .is-fail & {
+    color: var(--danger);
+    background: var(--danger-soft);
+  }
+}
+
+.puzzle-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  // Keeps the editor and the catalogue side by side without one scrolling the page.
+  max-height: 70vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.puzzle-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+  border: 1px solid var(--border-soft);
+
+  &.is-draft {
+    opacity: 0.72;
+    border-style: dashed;
+  }
+
+  @include from($bp-md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.puzzle-row__main {
+  min-width: 0;
+  flex: 1;
+}
+
+.puzzle-row__question {
+  margin: 0 0 var(--s-2);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.puzzle-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-1);
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+.puzzle-row__id {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  overflow-wrap: anywhere;
+}
+
+.puzzle-row__actions {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+
+  .btn {
+    flex: 1 1 auto;
+  }
+
+  @include from($bp-md) {
+    flex-wrap: nowrap;
+    .btn {
+      flex: 0 0 auto;
+    }
+  }
+}
+
+// ---------------------------------------------------------------- error page
+
+.error-code {
+  margin: 0 0 var(--s-2);
+  font-size: clamp(3rem, 2rem + 8vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: linear-gradient(120deg, var(--indigo-bright), var(--pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

@@ -1,0 +1,144 @@
+'use strict';
+
+const path = require('path');
+const express = require('express');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+
+const { config: defaultConfig } = require('../config');
+const { createLogger } = require('../lib/logger');
+const { createAttemptStore } = require('../lib/attemptStore');
+const { createRepository } = require('../repositories');
+const { createPuzzleService } = require('../services/puzzleService');
+const { createGameService } = require('../services/gameService');
+const { createStatsService } = require('../services/statsService');
+const { createAdminAuth } = require('./middleware/adminAuth');
+const { respond } = require('./middleware/respond');
+const { requestContext } = require('./middleware/requestContext');
+const { errorHandler, notFoundHandler } = require('./middleware/errors');
+const { PUZZLE_TYPES, DIFFICULTIES, TYPE_LABELS, DIFFICULTY_LABELS } = require('../domain/constants');
+const { createPagesRouter } = require('./routes/pages');
+const { createApiRouter } = require('./routes/api');
+const { createAdminApiRouter } = require('./routes/adminApi');
+
+/**
+ * Compose the application.
+ *
+ * Every dependency is created here and injected downward, so a test can hand in an in-memory
+ * repository or a fake clock without a single module-level mock.
+ *
+ * @param {object} [overrides] repository/logger/config replacements for tests
+ * @returns {import('express').Express} app, with `app.locals.container` holding the wiring
+ */
+function createApp(overrides = {}) {
+  const config = overrides.config || defaultConfig;
+  const logger = overrides.logger || createLogger({ level: config.logLevel, pretty: !config.isProduction });
+  const repository = overrides.repository || createRepository({ logger });
+
+  const attemptStore =
+    overrides.attemptStore ||
+    createAttemptStore({ ttlMs: config.play.attemptTtlMs, maxEntries: config.play.maxAttempts });
+
+  const puzzleService = createPuzzleService({ repository });
+  const statsService = createStatsService({ repository, logger });
+  const gameService = createGameService({ repository, puzzleService, attemptStore, logger });
+  const adminAuth = createAdminAuth({ config, logger });
+
+  const app = express();
+  app.set('view engine', 'ejs');
+  app.set('views', config.viewsDir);
+  app.set('trust proxy', config.isProduction ? 1 : false);
+  app.disable('x-powered-by');
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:'],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'", 'data:'],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'self'"],
+        },
+      },
+      // Charts are loaded from a CDN; the default same-origin policy would block them.
+      crossOriginEmbedderPolicy: false,
+    })
+  );
+  app.use(compression());
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+  app.use(requestContext({ logger }));
+  app.use(respond());
+
+  app.use(
+    express.static(config.publicDir, {
+      maxAge: config.isProduction ? '7d' : 0,
+      etag: true,
+    })
+  );
+
+  const limiters = buildLimiters(config);
+  if (limiters.api) app.use('/api/', limiters.api);
+
+  // Defaults for every render: a view (notably the error page) can be reached from a code path
+  // that never went through the pages router, so these must never be undefined in a template.
+  app.locals.site = config.site;
+  app.locals.driver = config.data.driver;
+  app.locals.pageTitle = config.site.name;
+  app.locals.pageDescription = 'Curated logic, math, word and lateral-thinking brain teasers.';
+  app.locals.navActive = '';
+  app.locals.types = PUZZLE_TYPES;
+  app.locals.difficulties = DIFFICULTIES;
+  app.locals.typeLabels = TYPE_LABELS;
+  app.locals.difficultyLabels = DIFFICULTY_LABELS;
+
+  app.use((req, res, next) => {
+    // Templates need to know whether to show the admin nav item and the sign-out button.
+    res.locals.isAdmin = adminAuth.isAuthorized(req);
+    res.locals.currentPath = req.path;
+    next();
+  });
+
+  app.use('/api/admin', createAdminApiRouter({ puzzleService, statsService, adminAuth }));
+  app.use('/api', createApiRouter({ puzzleService, gameService, statsService, repository, limiters }));
+  app.use('/', createPagesRouter({ puzzleService, statsService, adminAuth, config }));
+
+  app.get('/healthz', (req, res) => res.json({ ok: true, status: 'up' }));
+  app.get('/robots.txt', (req, res) => {
+    res.type('text/plain').send('User-agent: *\nDisallow: /admin\nAllow: /\n');
+  });
+
+  app.use(notFoundHandler());
+  app.use(errorHandler({ logger }));
+
+  app.locals.container = { repository, puzzleService, gameService, statsService, attemptStore, logger, config };
+
+  return app;
+}
+
+/** Rate limits protect the scoring endpoint from brute-forcing answers. Off by default outside production. */
+function buildLimiters(config) {
+  if (!config.rateLimit.enabled) return { api: null, submit: null };
+  const common = { standardHeaders: 'draft-7', legacyHeaders: false };
+  return {
+    api: rateLimit({
+      ...common,
+      windowMs: config.rateLimit.windowMs,
+      limit: config.rateLimit.apiMax,
+      message: { ok: false, error: 'Too many requests — slow down a moment.', code: 'rate_limited' },
+    }),
+    submit: rateLimit({
+      ...common,
+      windowMs: config.rateLimit.windowMs,
+      limit: config.rateLimit.submitMax,
+      message: { ok: false, error: 'Too many answers too fast — take a breath.', code: 'rate_limited' },
+    }),
+  };
+}
+
+module.exports = { createApp, PUBLIC_DIR: path.join(__dirname, '..', '..', 'public') };

@@ -1,23 +1,52 @@
 {
   "name": "brain-teaser-hub",
   "version": "1.0.0",
-  "description": "Interactive Brain Teaser Hub — Express, EJS, SCSS, Axios, Chart.js",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "build:css": "sass public/scss/main.scss public/css/main.css",
-    "watch:css": "sass --watch public/scss/main.scss public/css/main.css"
+  "private": true,
+  "description": "Brain Teaser Hub — curated logic, math, word and lateral puzzles with hints, scoring, streaks and a live leaderboard.",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20.11"
   },
-  "keywords": [],
-  "author": "",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "npm run build:css",
+    "build:css": "sass public/scss/main.scss public/css/main.css --style=compressed --no-source-map",
+    "watch:css": "sass --watch public/scss/main.scss public/css/main.css",
+    "test": "node --test --test-concurrency=1 tests/**/*.test.js",
+    "test:watch": "node --test --watch tests/**/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage --test-concurrency=1 tests/**/*.test.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,json,scss,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,scss,md}\"",
+    "db:push": "node scripts/db-push.js",
+    "db:seed": "node scripts/seed.js",
+    "verify": "npm run lint && npm run build:css && npm test"
+  },
+  "keywords": [
+    "brain-teaser",
+    "puzzles",
+    "express",
+    "supabase"
+  ],
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "compression": "^1.7.5",
+    "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
     "nodemon": "^3.1.9",
-    "sass": "^1.83.4"
+    "prettier": "^3.4.2",
+    "sass": "^1.83.4",
+    "supertest": "^7.0.0"
   }
 }

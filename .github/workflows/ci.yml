@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A new push to the same branch makes the in-flight run obsolete.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, build and test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20.x', '22.x']
+
+    env:
+      NODE_ENV: test
+      # Tests must never reach a real database; the in-memory driver is injected per test,
+      # and this guarantees a stray Supabase credential in the environment is ignored.
+      DATA_DRIVER: memory
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Build stylesheet
+        run: npm run build:css
+
+      - name: Fail if the committed CSS is stale
+        run: git diff --exit-code -- public/css/main.css
+
+      - name: Validate the puzzle catalogue
+        run: node scripts/seed.js --dry-run
+
+      - name: Test
+        run: npm run test:coverage
+
+  smoke:
+    name: Boot smoke test
+    runs-on: ubuntu-latest
+    needs: verify
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - run: npm ci
+
+      # Proves the real entry point boots and serves traffic — not just that the app factory works.
+      - name: Start the server and probe it
+        env:
+          PORT: '3000'
+          DATA_DRIVER: json
+        run: |
+          npm start &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/healthz > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/healthz
+          curl -sf http://localhost:3000/ > /dev/null
+          curl -sf http://localhost:3000/play > /dev/null
+          curl -sf "http://localhost:3000/api/puzzles/random" | grep -q '"ok":true'
+          kill $SERVER_PID
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+      - run: npm ci
+      # Advisory: a new high-severity CVE should be visible, but should not block an unrelated fix.
+      - run: npm audit --audit-level=high
+        continue-on-error: true

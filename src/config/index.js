@@ -1,0 +1,107 @@
+'use strict';
+
+const path = require('path');
+require('dotenv').config();
+
+const ROOT = path.join(__dirname, '..', '..');
+
+const toBool = (value, fallback = false) => {
+  if (value === undefined || value === '') return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(String(value).toLowerCase());
+};
+
+const toInt = (value, fallback) => {
+  const n = Number.parseInt(value, 10);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const env = process.env.NODE_ENV || 'development';
+
+const supabaseUrl = (process.env.SUPABASE_URL || '').trim();
+// The service-role key stays server-side only; it bypasses RLS and must never reach the browser.
+const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+
+/**
+ * Which storage backend to use.
+ * `supabase` when credentials are present, otherwise the JSON files under data/ so the app
+ * still runs on a fresh clone with zero setup. Override with DATA_DRIVER=json|supabase|memory.
+ */
+const requestedDriver = (process.env.DATA_DRIVER || '').trim().toLowerCase();
+const hasSupabaseCreds = Boolean(supabaseUrl && supabaseKey);
+const driver = requestedDriver || (hasSupabaseCreds ? 'supabase' : 'json');
+
+const config = Object.freeze({
+  env,
+  isProduction: env === 'production',
+  isTest: env === 'test',
+  port: toInt(process.env.PORT, 3000),
+  rootDir: ROOT,
+  publicDir: path.join(ROOT, 'public'),
+  viewsDir: path.join(ROOT, 'views'),
+  dataDir: process.env.DATA_DIR || path.join(ROOT, 'data'),
+  logLevel: process.env.LOG_LEVEL || (env === 'test' ? 'silent' : 'info'),
+
+  data: Object.freeze({
+    driver,
+    hasSupabaseCreds,
+  }),
+
+  supabase: Object.freeze({
+    url: supabaseUrl,
+    key: supabaseKey,
+    schema: process.env.SUPABASE_SCHEMA || 'public',
+  }),
+
+  admin: Object.freeze({
+    // Admin writes are rejected outright when no token is configured in production.
+    token: (process.env.ADMIN_TOKEN || '').trim(),
+    // Leave open in dev so the MVP is usable straight after `git clone`.
+    required: toBool(process.env.ADMIN_AUTH_REQUIRED, env === 'production'),
+    cookieName: 'bth_admin',
+    sessionMaxAgeMs: toInt(process.env.ADMIN_SESSION_HOURS, 12) * 60 * 60 * 1000,
+  }),
+
+  play: Object.freeze({
+    attemptTtlMs: toInt(process.env.ATTEMPT_TTL_MINUTES, 240) * 60 * 1000,
+    maxAttempts: toInt(process.env.MAX_ACTIVE_ATTEMPTS, 20000),
+  }),
+
+  rateLimit: Object.freeze({
+    enabled: toBool(process.env.RATE_LIMIT_ENABLED, env === 'production'),
+    windowMs: toInt(process.env.RATE_LIMIT_WINDOW_MS, 60_000),
+    submitMax: toInt(process.env.RATE_LIMIT_SUBMIT_MAX, 40),
+    apiMax: toInt(process.env.RATE_LIMIT_API_MAX, 240),
+  }),
+
+  site: Object.freeze({
+    name: 'Brain Teaser Hub',
+    tagline: 'Logic · Math · Word · Lateral',
+    baseUrl: (process.env.PUBLIC_BASE_URL || '').replace(/\/+$/, ''),
+  }),
+});
+
+/**
+ * Fail fast on misconfiguration that would otherwise surface as a runtime 500.
+ * @returns {string[]} warnings worth logging but not worth refusing to boot over
+ */
+function validateConfig(cfg = config) {
+  const warnings = [];
+
+  if (cfg.data.driver === 'supabase' && !cfg.data.hasSupabaseCreds) {
+    throw new Error(
+      'DATA_DRIVER=supabase but SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are missing. See .env.example.'
+    );
+  }
+  if (cfg.isProduction && cfg.admin.required && !cfg.admin.token) {
+    throw new Error('ADMIN_TOKEN must be set in production — admin routes would otherwise be unprotected.');
+  }
+  if (cfg.isProduction && cfg.data.driver === 'json') {
+    warnings.push('Running in production on the JSON file driver — data will not survive a redeploy.');
+  }
+  if (!cfg.isProduction && !cfg.admin.token) {
+    warnings.push('No ADMIN_TOKEN set — admin routes are open. Fine locally, never in production.');
+  }
+  return warnings;
+}
+
+module.exports = { config, validateConfig };

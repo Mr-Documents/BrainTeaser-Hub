@@ -1,3 +1,6 @@
 {
-  "ignore": ["data/**"]
+  "watch": ["src", "views"],
+  "ext": "js,ejs,json",
+  "ignore": ["data/**", "public/**", "tests/**"],
+  "env": { "NODE_ENV": "development" }
 }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main id="main" class="section shell">
+    <header class="section__head section__head--page">
+      <p class="eyebrow">Hall of fame</p>
+      <h1 class="section__title">Leaderboard</h1>
+      <p class="section__lede">Ranked by total points. Solve fast and keep a daily streak to climb quicker.</p>
+    </header>
+
+    <%- include('partials/stat-tiles') %>
+
+    <section class="panel" aria-labelledby="board-heading">
+      <div class="panel__head">
+        <h2 class="panel__title" id="board-heading">Top 50 solvers</h2>
+        <a class="panel__action" href="/play">Play now →</a>
+      </div>
+      <div class="table-scroll">
+        <table class="table table--full">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Player</th>
+              <th scope="col" class="num">Points</th>
+              <th scope="col" class="num">Solves</th>
+              <th scope="col" class="num">Streak</th>
+              <th scope="col" class="num">Best</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% leaderboard.forEach(function (row, i) { %>
+              <tr<%= i === 0 ? ' class="is-top"' : '' %>>
+                <td><%= i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1 %></td>
+                <td class="cell-name"><%= row.username %></td>
+                <td class="num"><%= Number(row.totalScore || 0).toLocaleString('en-US') %></td>
+                <td class="num"><%= row.solves || 0 %></td>
+                <td class="num"><%= row.currentStreak || 0 %></td>
+                <td class="num"><%= row.bestStreak || 0 %></td>
+              </tr>
+            <% }); %>
+            <% if (!leaderboard.length) { %>
+              <tr><td colspan="6" class="empty">Nobody has scored yet. <a href="/play">Be the first.</a></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="/js/ui.js" defer></script>
+</body>
+</html>

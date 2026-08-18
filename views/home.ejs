@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main id="main">
+    <section class="hero">
+      <div class="shell hero__inner">
+        <div class="hero__copy">
+          <p class="eyebrow">Sharpen your thinking, one teaser at a time</p>
+          <h1 class="hero__title">
+            <%= catalogue.published %> hand-picked brain teasers.<br />
+            <span class="hero__title-accent">Three levels. Five flavours.</span>
+          </h1>
+          <p class="hero__lede">
+            Logic traps, lateral thinking, number puzzles and wordplay — graded easy, medium and hard.
+            Take a hint if you're stuck, but it'll cost you points.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--lg" href="/play">Play a random puzzle</a>
+            <a class="btn btn--ghost btn--lg" href="/daily">Today's challenge</a>
+          </div>
+          <%- include('partials/stat-tiles') %>
+        </div>
+
+        <aside class="hero__panel" aria-labelledby="hero-board">
+          <div class="panel panel--flush">
+            <div class="panel__head">
+              <h2 id="hero-board" class="panel__title">Top solvers</h2>
+              <a class="panel__action" href="/leaderboard">Full board →</a>
+            </div>
+            <% if (leaderboard.length) { %>
+              <ol class="podium">
+                <% leaderboard.forEach(function (row, i) { %>
+                  <li class="podium__row<%= i === 0 ? ' is-first' : '' %>">
+                    <span class="podium__rank" aria-hidden="true"><%= i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1 %></span>
+                    <span class="podium__name"><%= row.username %></span>
+                    <span class="podium__score"><%= Number(row.totalScore || 0).toLocaleString('en-US') %></span>
+                  </li>
+                <% }); %>
+              </ol>
+            <% } else { %>
+              <p class="empty">No scores yet — the first solve takes the crown.</p>
+            <% } %>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section shell" aria-labelledby="levels-heading">
+      <header class="section__head">
+        <h2 id="levels-heading" class="section__title">Pick your level</h2>
+        <p class="section__lede">Every puzzle is graded. Start where you're comfortable, then climb.</p>
+      </header>
+      <div class="card-grid card-grid--3">
+        <% difficulties.forEach(function (level) { %>
+          <a class="tile tile--<%= level %>" href="/play?difficulty=<%= level %>">
+            <span class="tile__badge badge badge--<%= level %>"><%= difficultyLabels[level] %></span>
+            <h3 class="tile__title"><%= difficultyLabels[level] %></h3>
+            <p class="tile__copy"><%= difficultyBlurbs[level] %></p>
+            <span class="tile__meta"><%= catalogue.byDifficulty[level] || 0 %> puzzles</span>
+          </a>
+        <% }); %>
+      </div>
+    </section>
+
+    <section class="section shell" aria-labelledby="types-heading">
+      <header class="section__head">
+        <h2 id="types-heading" class="section__title">Or pick a flavour</h2>
+        <p class="section__lede">Filter the pool down to the kind of thinking you're in the mood for.</p>
+      </header>
+      <div class="card-grid card-grid--5">
+        <% types.forEach(function (type) { %>
+          <a class="tile tile--type" href="/play?type=<%= type %>">
+            <span class="tile__badge badge badge--<%= type %>"><%= typeLabels[type] %></span>
+            <p class="tile__copy"><%= typeBlurbs[type] %></p>
+            <span class="tile__meta"><%= catalogue.byType[type] || 0 %> puzzles</span>
+          </a>
+        <% }); %>
+      </div>
+    </section>
+
+    <section class="section shell" aria-labelledby="how-heading">
+      <header class="section__head">
+        <h2 id="how-heading" class="section__title">How it works</h2>
+      </header>
+      <ol class="steps">
+        <li class="steps__item">
+          <span class="steps__num">1</span>
+          <h3 class="steps__title">Get a puzzle</h3>
+          <p>Random, filtered by level and type, or the daily challenge everyone gets.</p>
+        </li>
+        <li class="steps__item">
+          <span class="steps__num">2</span>
+          <h3 class="steps__title">Answer or take a hint</h3>
+          <p>Hints cost 15 points each, wrong guesses cost 10. Answer clean for the full score.</p>
+        </li>
+        <li class="steps__item">
+          <span class="steps__num">3</span>
+          <h3 class="steps__title">Bank a streak</h3>
+          <p>Fast solves earn a speed bonus, and solving on consecutive days multiplies everything.</p>
+        </li>
+        <li class="steps__item">
+          <span class="steps__num">4</span>
+          <h3 class="steps__title">Challenge a friend</h3>
+          <p>Every puzzle has a shareable link that drops them straight into the same teaser.</p>
+        </li>
+      </ol>
+      <p class="section__foot"><a class="btn btn--ghost" href="/how-it-works">See the full scoring rules →</a></p>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="/js/ui.js" defer></script>
+</body>
+</html>

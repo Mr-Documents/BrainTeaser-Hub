@@ -1,0 +1,135 @@
+// ---------------------------------------------------------------------------
+// Design tokens
+//
+// Every colour, space and radius in the app resolves to a CSS custom property
+// declared here. Theming is therefore a matter of swapping this block, and the
+// runtime theme toggle only ever flips `data-theme` on <html>.
+// ---------------------------------------------------------------------------
+
+:root {
+  color-scheme: dark;
+
+  // Brand ramp
+  --indigo: #6366f1;
+  --indigo-bright: #818cf8;
+  --emerald: #10b981;
+  --amber: #f59e0b;
+  --pink: #ec4899;
+  --sky: #38bdf8;
+  --violet: #a855f7;
+  --red: #ef4444;
+  --green: #22c55e;
+
+  // Surfaces
+  --bg: #0b1020;
+  --bg-glow-1: rgba(99, 102, 241, 0.22);
+  --bg-glow-2: rgba(16, 185, 129, 0.12);
+  --surface: #141b30;
+  --surface-2: #1a2340;
+  --surface-raised: #1e2848;
+  --border: #2a3457;
+  --border-soft: rgba(148, 163, 184, 0.14);
+
+  // Ink
+  --ink: #e8edf7;
+  --ink-strong: #ffffff;
+  --ink-muted: #93a1bd;
+  --ink-faint: #64748b;
+  --chart-ink: #93a1bd;
+
+  --accent: var(--indigo);
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(99, 102, 241, 0.16);
+
+  // Feedback
+  --success: var(--green);
+  --success-soft: rgba(34, 197, 94, 0.14);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.14);
+
+  // Space scale
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+
+  // Radii and elevation
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.34);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.42);
+
+  // Layout
+  --shell: 1180px;
+  --nav-h: 4rem;
+
+  --font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --speed: 180ms;
+}
+
+// The light theme redefines tokens only — no component rule knows a theme exists.
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f6f7fb;
+  --bg-glow-1: rgba(99, 102, 241, 0.14);
+  --bg-glow-2: rgba(16, 185, 129, 0.08);
+  --surface: #ffffff;
+  --surface-2: #f2f4fa;
+  --surface-raised: #ffffff;
+  --border: #dfe3ee;
+  --border-soft: rgba(15, 23, 42, 0.08);
+
+  --ink: #1b2437;
+  --ink-strong: #0b1020;
+  --ink-muted: #5a6782;
+  --ink-faint: #8794ad;
+  --chart-ink: #5a6782;
+
+  --accent-soft: rgba(99, 102, 241, 0.1);
+  --danger: #dc2626;
+  --success: #16a34a;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 24px 56px rgba(15, 23, 42, 0.12);
+}
+
+// Semantic colours for the puzzle taxonomy, shared by badges, tiles and charts.
+$type-colors: (
+  'logic': var(--indigo),
+  'math': var(--emerald),
+  'word': var(--amber),
+  'lateral': var(--pink),
+  'trivia': var(--sky),
+);
+
+$difficulty-colors: (
+  'easy': var(--sky),
+  'medium': var(--violet),
+  'hard': var(--red),
+);
+
+// Breakpoints, mobile-first: each mixin adds capability above the given width.
+$bp-sm: 480px;
+$bp-md: 720px;
+$bp-lg: 860px;
+$bp-xl: 1080px;
+
+@mixin from($width) {
+  @media (min-width: $width) {
+    @content;
+  }
+}

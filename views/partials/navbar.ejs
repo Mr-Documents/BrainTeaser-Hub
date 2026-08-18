@@ -1,27 +1,43 @@
-<% var active = typeof navActive !== 'undefined' ? navActive : 'home'; %>
-<a class="skip-link" href="#main-content">Skip to content</a>
-<header class="navbar">
-  <div class="navbar-inner">
-    <a class="nav-brand" href="/">
-      <span class="nav-logo" aria-hidden="true">◈</span>
-      <span class="nav-brand-text">
-        <span class="nav-title">Brain Teaser Hub</span>
-        <span class="nav-sub">Logic · Math · Word</span>
+<% var active = typeof navActive !== 'undefined' ? navActive : ''; %>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="navbar" data-nav>
+  <div class="navbar__inner shell">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">🧠</span>
+      <span class="brand__text">
+        <span class="brand__name"><%= site.name %></span>
+        <span class="brand__tag"><%= site.tagline %></span>
       </span>
     </a>
-    <nav class="nav-menu" aria-label="Primary">
-      <a
-        href="/"
-        class="nav-item<%= active === 'home' ? ' is-active' : '' %>"
-        <%= active === 'home' ? 'aria-current="page"' : '' %>
-      >Play</a>
-      <a href="/#leaderboard" class="nav-item nav-item--ghost">Leaderboard</a>
-      <a href="/#stats-heading" class="nav-item nav-item--ghost">Stats</a>
-      <a
-        href="/admin"
-        class="nav-item<%= active === 'admin' ? ' is-active' : '' %>"
-        <%= active === 'admin' ? 'aria-current="page"' : '' %>
-      >Manage puzzles</a>
+
+    <button
+      class="nav-toggle"
+      type="button"
+      data-nav-toggle
+      aria-expanded="false"
+      aria-controls="primary-nav"
+      aria-label="Open navigation menu"
+    >
+      <span class="nav-toggle__bar" aria-hidden="true"></span>
+      <span class="nav-toggle__bar" aria-hidden="true"></span>
+      <span class="nav-toggle__bar" aria-hidden="true"></span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <ul class="nav__list">
+        <li><a class="nav__link<%= active === 'play' ? ' is-active' : '' %>" href="/play"<%- active === 'play' ? ' aria-current="page"' : '' %>>Play</a></li>
+        <li><a class="nav__link<%= active === 'daily' ? ' is-active' : '' %>" href="/daily"<%- active === 'daily' ? ' aria-current="page"' : '' %>>Daily</a></li>
+        <li><a class="nav__link<%= active === 'leaderboard' ? ' is-active' : '' %>" href="/leaderboard"<%- active === 'leaderboard' ? ' aria-current="page"' : '' %>>Leaderboard</a></li>
+        <li><a class="nav__link<%= active === 'how' ? ' is-active' : '' %>" href="/how-it-works"<%- active === 'how' ? ' aria-current="page"' : '' %>>Scoring</a></li>
+        <li><a class="nav__link nav__link--muted<%= active === 'admin' ? ' is-active' : '' %>" href="/admin"<%- active === 'admin' ? ' aria-current="page"' : '' %>>Studio</a></li>
+      </ul>
+      <div class="nav__cta">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme" title="Switch colour theme">
+          <span data-theme-icon aria-hidden="true">◐</span>
+        </button>
+        <a class="btn btn--primary btn--sm" href="/play">Start solving</a>
+      </div>
     </nav>
   </div>
 </header>

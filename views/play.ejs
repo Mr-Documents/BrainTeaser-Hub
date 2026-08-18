@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+</head>
+<body class="page-play page-play--<%= mode %>">
+  <%- include('partials/navbar') %>
+
+  <main id="main" class="play">
+    <div class="shell play__shell">
+
+      <section class="play__main" aria-labelledby="puzzle-heading">
+        <% if (mode === 'daily') { %>
+          <div class="mode-banner mode-banner--daily">
+            <strong>Daily challenge.</strong> One puzzle, the same for everyone, until midnight UTC.
+          </div>
+        <% } else if (mode === 'challenge') { %>
+          <div class="mode-banner mode-banner--challenge">
+            <strong>Someone challenged you.</strong> Solve it, then
+            <a href="/play">play a random one</a>.
+          </div>
+        <% } %>
+
+        <div class="play__toolbar" <%= mode === 'random' ? '' : 'hidden' %>>
+          <div class="field field--inline">
+            <label for="filter-type">Type</label>
+            <select id="filter-type" data-filter="type">
+              <option value="">Any type</option>
+              <% types.forEach(function (t) { %>
+                <option value="<%= t %>"<%= initialFilters.type === t ? ' selected' : '' %>><%= typeLabels[t] %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field field--inline">
+            <label for="filter-difficulty">Level</label>
+            <select id="filter-difficulty" data-filter="difficulty">
+              <option value="">Any level</option>
+              <% difficulties.forEach(function (d) { %>
+                <option value="<%= d %>"<%= initialFilters.difficulty === d ? ' selected' : '' %>><%= difficultyLabels[d] %></option>
+              <% }); %>
+            </select>
+          </div>
+          <button type="button" class="btn btn--ghost btn--sm" id="btn-reset-seen" title="Put the puzzles you have already seen back into the pool">
+            Reset seen
+          </button>
+        </div>
+
+        <article class="puzzle" id="puzzle-card" aria-live="polite">
+          <h2 id="puzzle-heading" class="sr-only">Current puzzle</h2>
+
+          <div class="puzzle__loading" id="puzzle-loading">
+            <div class="skeleton skeleton--badges" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="skeleton skeleton--text" aria-hidden="true"></div>
+            <div class="skeleton skeleton--text skeleton--short" aria-hidden="true"></div>
+            <p class="puzzle__loading-text" id="puzzle-loading-text">Loading a puzzle…</p>
+          </div>
+
+          <div class="puzzle__body" id="puzzle-body" hidden>
+            <div class="puzzle__meta">
+              <div class="badges">
+                <span class="badge" id="badge-type">—</span>
+                <span class="badge" id="badge-difficulty">—</span>
+                <span class="badge badge--points" id="badge-points">— pts</span>
+              </div>
+              <p class="timer" id="timer" title="Solve within 20 seconds for the full speed bonus">
+                <span class="timer__dot" aria-hidden="true"></span>
+                <span id="timer-value">0:00</span>
+              </p>
+            </div>
+
+            <p class="puzzle__question" id="puzzle-question"></p>
+
+            <div class="hints" id="hint-stack" aria-live="polite"></div>
+
+            <form class="answer" id="answer-form" autocomplete="off">
+              <label class="sr-only" for="answer-input">Your answer</label>
+              <input
+                class="answer__input"
+                type="text"
+                id="answer-input"
+                name="answer"
+                placeholder="Type your answer…"
+                autocomplete="off"
+                autocapitalize="none"
+                spellcheck="false"
+                enterkeyhint="send"
+              />
+              <button class="btn btn--primary answer__submit" type="submit" id="btn-submit">Submit</button>
+            </form>
+
+            <p class="feedback" id="feedback" role="status"></p>
+            <p class="explanation" id="explanation" hidden></p>
+
+            <div class="puzzle__actions">
+              <button type="button" class="btn btn--hint" id="btn-hint" hidden>
+                Hint <span class="btn__meta" id="hint-counter"></span>
+              </button>
+              <button type="button" class="btn btn--secondary" id="btn-next">
+                <%= mode === 'random' ? 'Next puzzle' : 'Play a random one' %>
+              </button>
+              <button type="button" class="btn btn--ghost" id="btn-share" title="Copy a link that opens this exact puzzle">
+                Share challenge
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <div class="player-bar">
+          <div class="field">
+            <label for="username">Display name</label>
+            <input type="text" id="username" maxlength="32" placeholder="Anonymous" autocomplete="nickname" />
+          </div>
+          <dl class="player-bar__stats">
+            <div><dt>Session</dt><dd id="session-points">0 pts</dd></div>
+            <div><dt>Solved</dt><dd id="session-solves">0</dd></div>
+            <div><dt>Streak</dt><dd id="session-streak">—</dd></div>
+          </dl>
+        </div>
+
+        <p class="shortcuts">
+          <kbd>Enter</kbd> submit · <kbd>H</kbd> hint · <kbd>N</kbd> next puzzle
+        </p>
+      </section>
+
+      <aside class="play__side">
+        <section class="panel" aria-labelledby="lb-heading">
+          <div class="panel__head">
+            <h2 class="panel__title" id="lb-heading">Leaderboard</h2>
+            <a class="panel__action" href="/leaderboard">All →</a>
+          </div>
+          <div class="table-scroll">
+            <table class="table">
+              <thead>
+                <tr><th scope="col">#</th><th scope="col">Player</th><th scope="col" class="num">Score</th></tr>
+              </thead>
+              <tbody id="leaderboard-body">
+                <% leaderboard.forEach(function (row, i) { %>
+                  <tr<%= i === 0 ? ' class="is-top"' : '' %>>
+                    <td><%= i + 1 %></td>
+                    <td><%= row.username %></td>
+                    <td class="num"><%= Number(row.totalScore || 0).toLocaleString('en-US') %></td>
+                  </tr>
+                <% }); %>
+                <% if (!leaderboard.length) { %>
+                  <tr><td colspan="3" class="empty">No scores yet — be first!</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="stats-heading">
+          <div class="panel__head">
+            <h2 class="panel__title" id="stats-heading">Global stats</h2>
+          </div>
+          <div class="charts">
+            <figure class="chart">
+              <figcaption>Solves by type</figcaption>
+              <div class="chart__canvas chart__canvas--pie"><canvas id="chart-type" role="img" aria-label="Solves by puzzle type"></canvas></div>
+            </figure>
+            <figure class="chart">
+              <figcaption>Solves by level</figcaption>
+              <div class="chart__canvas"><canvas id="chart-difficulty" role="img" aria-label="Solves by difficulty"></canvas></div>
+            </figure>
+            <figure class="chart">
+              <figcaption>Correct vs wrong guesses</figcaption>
+              <div class="chart__canvas"><canvas id="chart-guess" role="img" aria-label="Correct versus wrong guesses"></canvas></div>
+            </figure>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script id="bootstrap-data" type="application/json"><%- JSON.stringify({
+    mode: mode,
+    challengePuzzleId: challengePuzzleId,
+    stats: stats,
+    typeLabels: typeLabels,
+    difficultyLabels: difficultyLabels
+  }) %></script>
+  <script src="/js/ui.js" defer></script>
+  <script src="/js/play.js" defer></script>
+</body>
+</html>

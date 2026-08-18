@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <meta name="robots" content="noindex" />
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <main id="main" class="section shell">
+    <section class="panel panel--centered panel--narrow" aria-labelledby="login-heading">
+      <h1 class="section__title" id="login-heading">Puzzle studio</h1>
+      <p class="section__lede">Enter the admin token to create and edit puzzles.</p>
+
+      <% if (error) { %><p class="form__message is-error"><%= error %></p><% } %>
+      <% if (!tokenConfigured) { %>
+        <p class="form__message is-warn">
+          No <code>ADMIN_TOKEN</code> is configured on the server, so no token will be accepted.
+          Set one in <code>.env</code> and restart.
+        </p>
+      <% } %>
+
+      <form method="post" action="/admin/login" class="form form--stack">
+        <input type="hidden" name="next" value="<%= next %>" />
+        <div class="field">
+          <label for="token">Admin token</label>
+          <input type="password" id="token" name="token" required autocomplete="current-password" autofocus />
+        </div>
+        <button class="btn btn--primary" type="submit">Sign in</button>
+      </form>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+  <script src="/js/ui.js" defer></script>
+</body>
+</html>

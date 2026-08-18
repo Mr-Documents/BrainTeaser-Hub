@@ -1,3 +1,13 @@
 node_modules/
+coverage/
+.env
+.env.*
+!.env.example
 .DS_Store
 .cursor/
+*.log
+*.tmp
+
+# Runtime state for the local JSON driver (the catalogue in puzzles.json IS committed)
+data/players.json
+data/attempts.json

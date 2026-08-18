@@ -1,0 +1,5 @@
+node_modules
+public/css
+coverage
+package-lock.json
+data/*.json

@@ -1,0 +1,17 @@
+<%
+  var tiles = [
+    { label: 'Puzzles live', value: stats.puzzles, icon: '🧩' },
+    { label: 'Total solves', value: stats.totalSolves, icon: '✅' },
+    { label: 'Players', value: stats.players, icon: '👥' },
+    { label: 'Points scored', value: stats.totalPoints, icon: '⭐' }
+  ];
+%>
+<ul class="stat-tiles">
+  <% tiles.forEach(function (tile) { %>
+    <li class="stat-tile">
+      <span class="stat-tile__icon" aria-hidden="true"><%= tile.icon %></span>
+      <span class="stat-tile__value"><%= Number(tile.value || 0).toLocaleString('en-US') %></span>
+      <span class="stat-tile__label"><%= tile.label %></span>
+    </li>
+  <% }); %>
+</ul>

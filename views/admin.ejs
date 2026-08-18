@@ -1,188 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="description" content="Manage brain teaser puzzles: create, edit, and delete entries stored in JSON." />
-  <meta name="theme-color" content="#1a2332" />
-  <title><%= pageTitle || 'Admin · Brain Teaser Hub' %></title>
-  <link rel="stylesheet" href="/css/main.css" />
-  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <%- include('partials/head') %>
+  <meta name="robots" content="noindex" />
 </head>
-<body>
-  <%- include('partials/navbar', { navActive: navActive || 'admin' }) %>
+<body class="page-admin">
+  <%- include('partials/navbar') %>
 
-  <div class="page-hero page-hero--admin" id="main-content">
-    <div class="page-hero-inner">
-      <h1 class="page-hero-title">Puzzle administration</h1>
-      <p class="page-hero-lede">Create, update, or remove challenges. Changes are saved to <code>data/puzzles.json</code>.</p>
-    </div>
-  </div>
-
-  <main class="admin-main">
-    <section class="panel admin-form-panel">
-      <h2 id="form-title">Add puzzle</h2>
-      <form id="puzzle-form" class="admin-form">
-        <input type="hidden" id="f-mode" value="create" />
-        <label>ID <input type="text" id="f-id" required placeholder="unique-id" /></label>
-        <label>Question <textarea id="f-question" rows="3" required></textarea></label>
-        <label>Type
-          <select id="f-type">
-            <option value="logic">logic</option>
-            <option value="math">math</option>
-            <option value="word">word</option>
-          </select>
-        </label>
-        <label>Difficulty
-          <select id="f-difficulty">
-            <option value="easy">easy</option>
-            <option value="medium">medium</option>
-            <option value="hard">hard</option>
-          </select>
-        </label>
-        <label>Match mode
-          <select id="f-matchMode">
-            <option value="exact">exact</option>
-            <option value="partial">partial</option>
-            <option value="regex">regex</option>
-          </select>
-        </label>
-        <label>Answers (one per line) <textarea id="f-answers" rows="3" required placeholder="answer one&#10;answer two"></textarea></label>
-        <label>Hints (one per line, optional) <textarea id="f-hints" rows="3" placeholder="hint one"></textarea></label>
-        <label>Base points <input type="number" id="f-basePoints" value="100" min="0" /></label>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
-          <button type="button" class="btn btn-secondary hidden" id="btn-cancel-edit">Cancel edit</button>
+  <main id="main" class="studio">
+    <div class="shell">
+      <header class="studio__head">
+        <div>
+          <p class="eyebrow">Puzzle studio</p>
+          <h1 class="studio__title">Write, test and publish teasers</h1>
+          <p class="studio__lede">
+            Stored in <strong><%= driver === 'supabase' ? 'Supabase' : 'local JSON files' %></strong>.
+            Draft a puzzle, dry-run the answer matching, then publish it to the pool.
+          </p>
         </div>
-        <p id="admin-msg" class="feedback" role="status"></p>
-      </form>
-    </section>
+        <div class="studio__head-actions">
+          <a class="btn btn--ghost btn--sm" href="/api/admin/export">Export JSON</a>
+          <% if (authRequired) { %>
+            <form method="post" action="/admin/logout"><button class="btn btn--ghost btn--sm" type="submit">Sign out</button></form>
+          <% } %>
+        </div>
+      </header>
 
-    <section class="panel">
-      <h2>Existing puzzles</h2>
-      <ul class="puzzle-list" id="puzzle-list">
-        <% puzzles.forEach(function (p) { %>
-          <li data-id="<%= p.id %>">
-            <strong><%= p.id %></strong> — <%= p.type %> / <%= p.difficulty %>
-            <span class="list-q"><%= p.question.slice(0, 80) %><%= p.question.length > 80 ? '…' : '' %></span>
-            <button type="button" class="btn btn-small btn-edit" data-id="<%= p.id %>">Edit</button>
-            <button type="button" class="btn btn-small btn-danger btn-delete" data-id="<%= p.id %>">Delete</button>
-          </li>
-        <% }); %>
+      <ul class="stat-tiles stat-tiles--compact">
+        <li class="stat-tile"><span class="stat-tile__value"><%= catalogue.total %></span><span class="stat-tile__label">Total puzzles</span></li>
+        <li class="stat-tile"><span class="stat-tile__value"><%= catalogue.published %></span><span class="stat-tile__label">Published</span></li>
+        <li class="stat-tile"><span class="stat-tile__value"><%= catalogue.drafts %></span><span class="stat-tile__label">Drafts</span></li>
+        <li class="stat-tile"><span class="stat-tile__value"><%= catalogue.withHints %></span><span class="stat-tile__label">With hints</span></li>
+        <li class="stat-tile"><span class="stat-tile__value"><%= stats.totalSolves %></span><span class="stat-tile__label">Solves</span></li>
       </ul>
-    </section>
+
+      <div class="studio__grid">
+        <!-- ------------------------------------------------------ editor -->
+        <section class="panel studio__editor" aria-labelledby="editor-heading">
+          <div class="panel__head">
+            <h2 class="panel__title" id="editor-heading">New puzzle</h2>
+            <span class="chip chip--mode" id="editor-mode">Creating</span>
+          </div>
+
+          <form id="puzzle-form" class="form" novalidate>
+            <input type="hidden" id="f-original-id" value="" />
+
+            <div class="form__row">
+              <div class="field field--grow">
+                <label for="f-question">Question <span class="req" aria-hidden="true">*</span></label>
+                <textarea id="f-question" name="question" rows="4" required
+                  placeholder="What has keys but can't open a single lock?"></textarea>
+                <p class="field__help">
+                  <span id="question-count">0</span> characters ·
+                  This is exactly what the player sees.
+                </p>
+                <p class="field__error" data-error-for="question" hidden></p>
+              </div>
+            </div>
+
+            <div class="form__row form__row--3">
+              <div class="field">
+                <label for="f-type">Type</label>
+                <select id="f-type" name="type">
+                  <% types.forEach(function (t) { %>
+                    <option value="<%= t %>"<%= t === 'logic' ? ' selected' : '' %>><%= typeLabels[t] %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f-difficulty">Level</label>
+                <select id="f-difficulty" name="difficulty">
+                  <% difficulties.forEach(function (d) { %>
+                    <option value="<%= d %>"<%= d === 'medium' ? ' selected' : '' %>><%= difficultyLabels[d] %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f-basePoints">Base points</label>
+                <input type="number" id="f-basePoints" name="basePoints" min="0" max="1000" step="10" value="<%= defaultBasePoints.medium %>" />
+                <p class="field__help">Suggested for this level: <span id="suggested-points"><%= defaultBasePoints.medium %></span></p>
+              </div>
+            </div>
+
+            <div class="form__row">
+              <div class="field field--grow">
+                <label for="f-answers">Accepted answers <span class="req" aria-hidden="true">*</span></label>
+                <textarea id="f-answers" name="answers" rows="3" required placeholder="piano&#10;a piano&#10;keyboard"></textarea>
+                <p class="field__help">One per line. Casing, accents, punctuation, leading "a/an/the" and number words are already forgiven.</p>
+                <p class="field__error" data-error-for="answers" hidden></p>
+              </div>
+            </div>
+
+            <div class="form__row">
+              <div class="field field--grow">
+                <label for="f-matchMode">Match mode</label>
+                <div class="segmented" role="radiogroup" aria-label="Match mode">
+                  <label class="segmented__option">
+                    <input type="radio" name="matchMode" value="exact" checked />
+                    <span>Exact</span>
+                  </label>
+                  <label class="segmented__option">
+                    <input type="radio" name="matchMode" value="partial" />
+                    <span>Contains</span>
+                  </label>
+                  <label class="segmented__option">
+                    <input type="radio" name="matchMode" value="regex" />
+                    <span>Regex</span>
+                  </label>
+                </div>
+                <p class="field__help" id="matchmode-help">
+                  <strong>Exact:</strong> the whole answer must match one of the lines. Best for one-word answers.
+                </p>
+              </div>
+            </div>
+
+            <div class="form__row">
+              <div class="field field--grow">
+                <label for="f-hints">Hints <span class="field__optional">optional, max 5</span></label>
+                <textarea id="f-hints" name="hints" rows="3" placeholder="It has 88 of them.&#10;It isn't a door."></textarea>
+                <p class="field__help">One per line, revealed in order. Each one costs the player 15 points.</p>
+                <p class="field__error" data-error-for="hints" hidden></p>
+              </div>
+            </div>
+
+            <div class="form__row">
+              <div class="field field--grow">
+                <label for="f-explanation">Explanation <span class="field__optional">optional</span></label>
+                <textarea id="f-explanation" name="explanation" rows="2" placeholder="Shown after a correct solve."></textarea>
+              </div>
+            </div>
+
+            <details class="disclosure">
+              <summary>Advanced</summary>
+              <div class="form__row form__row--2">
+                <div class="field">
+                  <label for="f-id">Puzzle ID</label>
+                  <input type="text" id="f-id" name="id" placeholder="auto-generated from the question" />
+                  <p class="field__help">Used in the share URL: <code>/challenge/<span id="id-preview">…</span></code></p>
+                  <p class="field__error" data-error-for="id" hidden></p>
+                </div>
+                <div class="field">
+                  <label for="f-tags">Tags</label>
+                  <input type="text" id="f-tags" name="tags" placeholder="classic, wordplay" />
+                  <p class="field__help">Comma separated.</p>
+                </div>
+              </div>
+              <div class="field field--checkbox">
+                <label>
+                  <input type="checkbox" id="f-isPublished" checked />
+                  <span>Published — visible to players straight away</span>
+                </label>
+              </div>
+            </details>
+
+            <!-- Dry-run: grade sample answers against the draft before it goes live. -->
+            <section class="tester" aria-labelledby="tester-heading">
+              <h3 class="tester__title" id="tester-heading">Test the matcher</h3>
+              <p class="tester__lede">Type what a player might submit and check it grades the way you expect.</p>
+              <div class="tester__row">
+                <input type="text" id="tester-input" placeholder="e.g. A Piano!" aria-label="Sample answer to test" />
+                <button type="button" class="btn btn--secondary btn--sm" id="btn-test">Test</button>
+              </div>
+              <ul class="tester__results" id="tester-results"></ul>
+            </section>
+
+            <p class="form__message" id="form-message" role="status" hidden></p>
+
+            <div class="form__actions">
+              <button type="submit" class="btn btn--primary" id="btn-save">Publish puzzle</button>
+              <button type="button" class="btn btn--ghost" id="btn-reset">Clear</button>
+              <button type="button" class="btn btn--ghost" id="btn-cancel-edit" hidden>Cancel edit</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ------------------------------------------------------ catalogue -->
+        <section class="panel studio__list" aria-labelledby="list-heading">
+          <div class="panel__head">
+            <h2 class="panel__title" id="list-heading">Catalogue</h2>
+            <span class="chip" id="list-count"><%= puzzles.length %></span>
+          </div>
+
+          <div class="studio__filters">
+            <label class="sr-only" for="list-search">Search puzzles</label>
+            <input type="search" id="list-search" placeholder="Search question, id or tag…" />
+            <label class="sr-only" for="list-type">Filter by type</label>
+            <select id="list-type">
+              <option value="">All types</option>
+              <% types.forEach(function (t) { %><option value="<%= t %>"><%= typeLabels[t] %></option><% }); %>
+            </select>
+            <label class="sr-only" for="list-difficulty">Filter by level</label>
+            <select id="list-difficulty">
+              <option value="">All levels</option>
+              <% difficulties.forEach(function (d) { %><option value="<%= d %>"><%= difficultyLabels[d] %></option><% }); %>
+            </select>
+          </div>
+
+          <ul class="puzzle-list" id="puzzle-list"></ul>
+          <p class="empty" id="list-empty" hidden>Nothing matches those filters.</p>
+        </section>
+      </div>
+    </div>
   </main>
 
   <%- include('partials/footer') %>
 
-  <script id="puzzles-json" type="application/json"><%- JSON.stringify(puzzles) %></script>
-  <script>
-    const PUZZLES = JSON.parse(document.getElementById('puzzles-json').textContent);
-    const byId = Object.fromEntries(PUZZLES.map((p) => [p.id, p]));
-
-    const form = document.getElementById('puzzle-form');
-    const msg = document.getElementById('admin-msg');
-    const modeInput = document.getElementById('f-mode');
-    const formTitle = document.getElementById('form-title');
-    const btnCancel = document.getElementById('btn-cancel-edit');
-    const fId = document.getElementById('f-id');
-
-    function linesToArray(el) {
-      return el.value.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-    }
-
-    function arrayToLines(arr) {
-      return (arr || []).join('\n');
-    }
-
-    function showMessage(text, ok) {
-      msg.textContent = text;
-      msg.classList.toggle('feedback-error', !ok);
-      msg.classList.toggle('feedback-success', ok);
-    }
-
-    function setCreateMode() {
-      modeInput.value = 'create';
-      formTitle.textContent = 'Add puzzle';
-      form.reset();
-      document.getElementById('f-basePoints').value = '100';
-      fId.removeAttribute('readonly');
-      btnCancel.classList.add('hidden');
-    }
-
-    function setEditMode(p) {
-      modeInput.value = 'edit';
-      formTitle.textContent = 'Edit puzzle';
-      fId.value = p.id;
-      fId.setAttribute('readonly', 'readonly');
-      document.getElementById('f-question').value = p.question || '';
-      document.getElementById('f-type').value = p.type || 'logic';
-      document.getElementById('f-difficulty').value = p.difficulty || 'medium';
-      document.getElementById('f-matchMode').value = p.matchMode || 'exact';
-      document.getElementById('f-answers').value = arrayToLines(p.answers);
-      document.getElementById('f-hints').value = arrayToLines(p.hints);
-      document.getElementById('f-basePoints').value = String(p.basePoints ?? 100);
-      btnCancel.classList.remove('hidden');
-      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    btnCancel.addEventListener('click', setCreateMode);
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = fId.value.trim();
-      const body = {
-        id,
-        question: document.getElementById('f-question').value.trim(),
-        type: document.getElementById('f-type').value,
-        difficulty: document.getElementById('f-difficulty').value,
-        matchMode: document.getElementById('f-matchMode').value,
-        answers: linesToArray(document.getElementById('f-answers')),
-        hints: linesToArray(document.getElementById('f-hints')),
-        basePoints: Number(document.getElementById('f-basePoints').value) || 0,
-      };
-      if (!body.answers.length) {
-        showMessage('Add at least one answer line.', false);
-        return;
-      }
-      try {
-        if (modeInput.value === 'edit') {
-          await axios.put('/api/puzzles/' + encodeURIComponent(id), body);
-          showMessage('Updated puzzle ' + id, true);
-        } else {
-          await axios.post('/api/puzzles', body);
-          showMessage('Created puzzle ' + id, true);
-        }
-        location.reload();
-      } catch (err) {
-        showMessage(err.response?.data?.error || err.message, false);
-      }
-    });
-
-    document.getElementById('puzzle-list').addEventListener('click', async (e) => {
-      const del = e.target.closest('.btn-delete');
-      const edit = e.target.closest('.btn-edit');
-      if (del) {
-        const id = del.getAttribute('data-id');
-        if (!confirm('Delete puzzle ' + id + '?')) return;
-        try {
-          await axios.delete('/api/puzzles/' + encodeURIComponent(id));
-          location.reload();
-        } catch (err) {
-          showMessage(err.response?.data?.error || err.message, false);
-        }
-      }
-      if (edit) {
-        const id = edit.getAttribute('data-id');
-        const p = byId[id];
-        if (p) setEditMode(p);
-      }
-    });
-
-    if (window.location.hash && window.location.hash.startsWith('#edit-')) {
-      const id = window.location.hash.slice(6);
-      if (byId[id]) setEditMode(byId[id]);
-    }
-  </script>
+  <script id="bootstrap-data" type="application/json"><%- JSON.stringify({
+    puzzles: puzzles,
+    types: types,
+    difficulties: difficulties,
+    typeLabels: typeLabels,
+    difficultyLabels: difficultyLabels,
+    defaultBasePoints: defaultBasePoints
+  }) %></script>
+  <script src="/js/ui.js" defer></script>
+  <script src="/js/admin.js" defer></script>
 </body>
 </html>
