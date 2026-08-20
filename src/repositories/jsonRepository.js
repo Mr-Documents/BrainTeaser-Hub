@@ -20,6 +20,8 @@ function createJsonRepository({ dataDir, persist = true, seed = null } = {}) {
     puzzles: path.join(dataDir || '.', 'puzzles.json'),
     players: path.join(dataDir || '.', 'players.json'),
     attempts: path.join(dataDir || '.', 'attempts.json'),
+    // Read-only source of truth; the store above is generated from it when absent.
+    seedCatalogue: path.join(dataDir || '.', 'puzzles.seed.json'),
   };
 
   const state = {
@@ -63,20 +65,38 @@ function createJsonRepository({ dataDir, persist = true, seed = null } = {}) {
     });
   }
 
+  /**
+   * @returns {boolean} true when the catalogue was hydrated from the seed file and should be
+   *   written back to disk by the caller.
+   */
   function load() {
     if (seed) {
       state.puzzles = (seed.puzzles || []).map(normalizeStored);
       state.players = seed.players || [];
       state.attemptTotals = { ...emptyTotals(), ...(seed.totals || {}) };
-      return;
+      return false;
     }
-    if (!persist) return;
-    const puzzleFile = readJsonSync(files.puzzles, { puzzles: [] });
-    state.puzzles = (Array.isArray(puzzleFile) ? puzzleFile : puzzleFile.puzzles || []).map(normalizeStored);
+    if (!persist) return false;
+
     const playerFile = readJsonSync(files.players, { players: [] });
     state.players = Array.isArray(playerFile) ? playerFile : playerFile.players || playerFile.entries || [];
     const attemptFile = readJsonSync(files.attempts, null);
     state.attemptTotals = attemptFile ? { ...emptyTotals(), ...attemptFile } : emptyTotals();
+
+    const puzzleFile = readJsonSync(files.puzzles, null);
+    const stored = puzzleFile ? (Array.isArray(puzzleFile) ? puzzleFile : puzzleFile.puzzles || []) : [];
+
+    if (stored.length > 0) {
+      state.puzzles = stored.map(normalizeStored);
+      return false;
+    }
+
+    // No store yet: hydrate from the curated seed catalogue so a fresh clone is playable
+    // immediately, with no setup step. Only ever happens when the store is absent or empty,
+    // so an operator's edits and deletions are never undone.
+    const seedFile = readJsonSync(files.seedCatalogue, { puzzles: [] });
+    state.puzzles = (seedFile.puzzles || []).map(normalizeStored);
+    return state.puzzles.length > 0;
   }
 
   /** Tolerate rows written by older versions (snake_case, missing fields). */
@@ -98,11 +118,14 @@ function createJsonRepository({ dataDir, persist = true, seed = null } = {}) {
     };
   }
 
-  load();
+  const hydratedFromSeed = load();
 
   const savePuzzles = () => queueWrite(files.puzzles, { puzzles: state.puzzles });
   const savePlayers = () => queueWrite(files.players, { players: state.players });
   const saveAttempts = () => queueWrite(files.attempts, state.attemptTotals);
+
+  // Write the hydrated catalogue back so the next boot is a plain read.
+  if (hydratedFromSeed) savePuzzles();
 
   const clone = (v) => (v == null ? v : JSON.parse(JSON.stringify(v)));
 

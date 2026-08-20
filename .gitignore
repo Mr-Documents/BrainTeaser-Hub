@@ -8,6 +8,9 @@ coverage/
 *.log
 *.tmp
 
-# Runtime state for the local JSON driver (the catalogue in puzzles.json IS committed)
+# Runtime state for the local JSON driver. All generated: the catalogue is hydrated from
+# data/puzzles.seed.json (the tracked source of truth) on first boot, and mutated by the admin
+# UI thereafter - so committing it just guarantees drift.
+data/puzzles.json
 data/players.json
 data/attempts.json
