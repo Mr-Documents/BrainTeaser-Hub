@@ -30,6 +30,26 @@ const requestedDriver = (process.env.DATA_DRIVER || '').trim().toLowerCase();
 const hasSupabaseCreds = Boolean(supabaseUrl && supabaseKey);
 const driver = requestedDriver || (hasSupabaseCreds ? 'supabase' : 'json');
 
+/**
+ * Turn whatever the host supplies into a usable absolute origin.
+ *
+ * Hosts differ: Render's `fromService` yields a bare hostname ("app.onrender.com"), while most
+ * people paste a full URL. Accepting both means one fewer way for a deploy to boot with an
+ * origin that produces broken sign-in links.
+ */
+function normalizeOrigin(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  try {
+    const url = new URL(withScheme);
+    // Origin only - a path here would be concatenated into every generated link.
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return '';
+  }
+}
+
 const config = Object.freeze({
   env,
   isProduction: env === 'production',
@@ -102,7 +122,7 @@ const config = Object.freeze({
   site: Object.freeze({
     name: 'Brain Teaser Hub',
     tagline: 'Logic · Math · Word · Lateral',
-    baseUrl: (process.env.PUBLIC_BASE_URL || '').replace(/\/+$/, ''),
+    baseUrl: normalizeOrigin(process.env.PUBLIC_BASE_URL),
   }),
 });
 

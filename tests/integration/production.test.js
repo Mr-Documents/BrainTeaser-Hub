@@ -103,6 +103,54 @@ test.describe('production refuses to boot when misconfigured', () => {
   });
 });
 
+test.describe('the public origin', () => {
+  const { config } = require('../../src/config');
+
+  /** Rebuild config with a given PUBLIC_BASE_URL, the way boot does. */
+  function originFor(value) {
+    const previous = process.env.PUBLIC_BASE_URL;
+    process.env.PUBLIC_BASE_URL = value;
+    delete require.cache[require.resolve('../../src/config')];
+    const { config: rebuilt } = require('../../src/config');
+    const origin = rebuilt.site.baseUrl;
+
+    if (previous === undefined) delete process.env.PUBLIC_BASE_URL;
+    else process.env.PUBLIC_BASE_URL = previous;
+    delete require.cache[require.resolve('../../src/config')];
+    require('../../src/config');
+    return origin;
+  }
+
+  test('a bare hostname becomes a full https origin', () => {
+    // Render's `fromService` supplies the host with no scheme.
+    assert.equal(originFor('brain-teaser-hub.onrender.com'), 'https://brain-teaser-hub.onrender.com');
+  });
+
+  test('a full URL is kept as-is', () => {
+    assert.equal(originFor('https://puzzles.example.com'), 'https://puzzles.example.com');
+  });
+
+  test('a trailing slash or path is trimmed to the origin', () => {
+    // A path here would be concatenated into every generated link.
+    assert.equal(originFor('https://example.com/'), 'https://example.com');
+    assert.equal(originFor('https://example.com/app/'), 'https://example.com');
+  });
+
+  test('a local http origin is not silently upgraded', () => {
+    assert.equal(originFor('http://localhost:3000'), 'http://localhost:3000');
+  });
+
+  test('unusable input resolves to empty, so the production guard still fires', () => {
+    for (const bad of ['', '   ', 'not a url at all']) {
+      assert.equal(originFor(bad), '', `${JSON.stringify(bad)} must not produce an origin`);
+    }
+  });
+
+  test('config is left untouched for the rest of the suite', () => {
+    assert.equal(typeof config.site.baseUrl, 'string');
+  });
+});
+
 test.describe('cookies in production', () => {
   test('the player session cookie is Secure, HttpOnly and SameSite', async () => {
     const { app, issuedLinks } = buildProductionApp();

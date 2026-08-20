@@ -100,22 +100,89 @@ lives under `%LOCALAPPDATA%/Programs/DockerDesktop/resources/bin`.
 
 ---
 
-## Host-specific notes
+## Deploying to Render
 
-**Fly.io** - `fly launch --no-deploy`, then `fly secrets set SESSION_SECRET=... ADMIN_TOKEN=...`
-and `fly deploy`. Point the health check at `/healthz`. Set `PUBLIC_BASE_URL` to your `.fly.dev`
-host or custom domain.
+Render is the recommended host for this app: it runs the Dockerfile as a persistent process and
+redeploys on every push to `main`, with no CLI and no CI wiring.
 
-**Render** - a Docker web service, or a Node service with build `npm ci && npm run build:css`
-and start `npm start`. Health check path `/healthz`.
+**Use the Starter plan, not Free.** The free plan sleeps after 15 minutes of inactivity, which
+both wipes in-flight play sessions (hint counts and timers live in process memory) and adds a
+~50 second cold start for the next visitor.
 
-**Railway** - detects the Dockerfile automatically. Set the variables in the dashboard; `RELEASE`
-is populated from `RAILWAY_GIT_COMMIT_SHA` for you.
+### Option A - the dashboard (simplest)
 
-**Anything behind a proxy** - the app already sets `trust proxy` in production, which is what
-makes `secure` cookies and per-IP rate limiting work correctly behind a load balancer.
+1. **New → Web Service**, connect the repository.
+2. **Runtime: Docker.** Render detects the `Dockerfile`; leave the build and start commands empty.
+3. **Plan: Starter.**
+4. **Health Check Path: `/healthz`.**
+5. Add the environment variables below, then **Create Web Service**.
+
+| Variable                    | Value                                             |
+| --------------------------- | ------------------------------------------------- |
+| `NODE_ENV`                  | `production`                                      |
+| `SUPABASE_URL`              | your project URL                                  |
+| `SUPABASE_SERVICE_ROLE_KEY` | your service-role key                             |
+| `SESSION_SECRET`            | click **Generate**                                |
+| `ADMIN_TOKEN`               | click **Generate**, then copy it somewhere safe   |
+| `PUBLIC_BASE_URL`           | your `*.onrender.com` host, or your custom domain |
+| `OAUTH_PROVIDERS`           | leave empty, or `google` once enabled in Supabase |
+
+You do not need to prefix `PUBLIC_BASE_URL` with `https://` - a bare hostname is normalised into
+a full origin on boot.
+
+### Option B - the blueprint
+
+`render.yaml` in the repo describes the same service, so the deployment is reviewable in git
+rather than living only in a browser. **New → Blueprint**, point it at the repo, and supply the
+two Supabase secrets when prompted; the rest is filled in for you, including `SESSION_SECRET`
+and `ADMIN_TOKEN` as generated values and `PUBLIC_BASE_URL` from the service's own hostname.
+
+If Render rejects the `runtime:` key, your account is on the older blueprint schema - change it
+to `env: docker`.
+
+### After the first deploy
+
+1. Read `ADMIN_TOKEN` out of the Render dashboard (Environment tab) and sign in at `/admin`.
+2. Set up SMTP under **Supabase → Authentication → Email**. The built-in mailer allows only a
+   handful of sends per hour, so sign-in will start failing silently under real traffic.
+3. If you attach a custom domain, update `PUBLIC_BASE_URL` to match and redeploy - otherwise
+   sign-in links keep pointing at the old `onrender.com` host.
+
+### Verified against the real image
+
+The container was run under Render-like conditions (`PORT` injected, `NODE_ENV=production`, a
+bare hostname in `PUBLIC_BASE_URL`, live Supabase) and checked:
+
+|                              |                                                   |
+| ---------------------------- | ------------------------------------------------- |
+| Binds to the injected `PORT` | yes, listened on 10000                            |
+| `/healthz`                   | `200` - what Render polls                         |
+| `/readyz`                    | `ready`, driver `supabase`                        |
+| Canonical origin             | bare host normalised to `https://...onrender.com` |
+| Forged `Host` header         | ignored - cannot poison generated links           |
+| Admin without a token        | `302` / `401`; `200` with it                      |
+| Missing `PUBLIC_BASE_URL`    | refuses to boot, with the reason                  |
+| `SIGTERM`                    | drains and exits `0`                              |
 
 ---
+
+## Other hosts
+
+**Fly.io** - `fly launch --no-deploy`, then `fly secrets set ...` and `fly deploy`. Cheaper and
+restarts far faster, but needs a GitHub Action to match Render's deploy-on-push. Set
+`min_machines_running = 1`; the generated config stops idle machines, which wipes play sessions.
+
+**Railway** - detects the Dockerfile automatically; `RELEASE` is populated from
+`RAILWAY_GIT_COMMIT_SHA` for you.
+
+**Serverless (Vercel, Netlify Functions, Cloudflare Workers) will not work** as the app stands.
+Play sessions live in process memory, so a request that lands on a different instance than the
+one that served the puzzle cannot resolve its attempt token, and every submission fails. Swap
+`src/lib/attemptStore.js` for a Redis-backed implementation first.
+
+**Anything behind a proxy** - `trust proxy` is already enabled in production, which is what makes
+`Secure` cookies and per-IP rate limiting work correctly. Covered by
+`tests/integration/production.test.js`.
 
 ## After deploying
 
