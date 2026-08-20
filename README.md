@@ -203,13 +203,17 @@ Every response uses one envelope: `{ ok: true, data }` or `{ ok: false, error, c
 
 Two suites, on Node's built-in runner - no Jest, no Vitest, no mocking library.
 
-**`npm test`** - 218 tests, no network, runs anywhere.
+**`npm test`** - 294 tests, no network, runs anywhere.
 
 - **Unit** - scoring maths, answer matching, puzzle selection, validation, streaks, attempt
-  store, colour contrast, form-control styling.
+  store, colour contrast, form-control styling, seed hydration.
 - **Integration** - the real Express app over HTTP via supertest: the full play loop, hint
   sequencing, attempt-token forgery, both sign-in flows, the OAuth handshake, admin auth and
-  CRUD, page rendering, error shapes and security headers.
+  CRUD, page rendering, health probes, error shapes and security headers.
+- **Browser** (`tests/browser/`) - the 1,200 lines under `public/js`, driven through jsdom
+  against the _real_ rendered HTML, with `fetch` routed back into the _real_ Express app. Not
+  fixtures: a renamed element id, a changed response field or a broken event handler fails
+  here, and nowhere else. Run alone with `npm run test:browser`.
 
 **`npm run test:supabase`** - 42 tests against a real Postgres. This is the suite the others
 cannot replace: it is the only place a wrong column name, a mismatched RPC signature, a broken

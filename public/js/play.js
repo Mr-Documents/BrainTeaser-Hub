@@ -25,6 +25,7 @@
     input: el('answer-input'),
     submit: el('btn-submit'),
     hintBtn: el('btn-hint'),
+    hintLabel: el('hint-label'),
     hintCounter: el('hint-counter'),
     nextBtn: el('btn-next'),
     shareBtn: el('btn-share'),
@@ -130,6 +131,7 @@
 
     dom.hintBtn.hidden = !puzzle.hasHints;
     dom.hintBtn.disabled = false;
+    dom.hintLabel.textContent = 'Hint';
     dom.hintCounter.textContent = puzzle.hasHints ? `0/${puzzle.hintCount}` : '';
 
     dom.loading.hidden = true;
@@ -342,7 +344,9 @@
       state.hintsShown = data.step;
       dom.hintCounter.textContent = `${data.step}/${data.total}`;
       dom.hintBtn.disabled = data.remaining === 0;
-      if (data.remaining === 0) dom.hintBtn.textContent = 'No hints left';
+      // Only the label - setting textContent on the button would destroy the counter span
+      // with it, and it would never come back for later puzzles.
+      if (data.remaining === 0) dom.hintLabel.textContent = 'No hints left';
       dom.input.focus({ preventScroll: true });
     } catch (error) {
       dom.hintBtn.disabled = false;
