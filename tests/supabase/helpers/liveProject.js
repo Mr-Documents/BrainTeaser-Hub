@@ -87,6 +87,24 @@ async function createTestUser(db, label = 'player') {
 }
 
 /**
+ * The highest attempt id that existed before this run started.
+ *
+ * Needed because a test may delete its own puzzle mid-run (proving that `on delete set null`
+ * preserves the attempt), which nulls `puzzle_id` and makes the row unmatchable by prefix
+ * afterwards. Those orphans are not harmless: they feed v_stats_summary, which the live site
+ * displays. Watermarking lets cleanup find them again.
+ */
+let attemptWatermark = null;
+
+/** Call before the first test writes anything. Safe to call more than once. */
+async function markStartingPoint(db) {
+  if (attemptWatermark !== null) return attemptWatermark;
+  const { data } = await db.from('attempts').select('id').order('id', { ascending: false }).limit(1).maybeSingle();
+  attemptWatermark = data?.id ?? 0;
+  return attemptWatermark;
+}
+
+/**
  * Remove everything this run created, in dependency order.
  * Deliberately tolerant: a failure here must report loudly but not mask a test failure.
  */
@@ -96,6 +114,17 @@ async function cleanup(db) {
   // attempts -> players -> puzzles -> auth users
   const { error: attemptsError } = await db.from('attempts').delete().like('puzzle_id', `${PREFIX}%`);
   if (attemptsError) problems.push(`attempts: ${attemptsError.message}`);
+
+  // Then the orphans this run created. Scoped two ways so a real player's attempt can never be
+  // caught by it: newer than the watermark AND detached from any puzzle.
+  if (attemptWatermark !== null) {
+    const { error: orphanError } = await db
+      .from('attempts')
+      .delete()
+      .gt('id', attemptWatermark)
+      .is('puzzle_id', null);
+    if (orphanError) problems.push(`orphaned attempts: ${orphanError.message}`);
+  }
 
   const { error: playersError } = await db.from('players').delete().like('display_name', `${PREFIX}%`);
   if (playersError) problems.push(`players: ${playersError.message}`);
@@ -115,9 +144,6 @@ async function cleanup(db) {
     }
   }
 
-  // Anonymous attempts have a null puzzle_id after the puzzle is deleted, so they cannot be
-  // matched by prefix. They are harmless (they carry no identity) but are reported so a run
-  // never silently leaves rows behind.
   return problems;
 }
 
@@ -133,4 +159,5 @@ module.exports = {
   makePuzzle,
   createTestUser,
   cleanup,
+  markStartingPoint,
 };

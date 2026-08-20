@@ -11,6 +11,7 @@ const {
   makePuzzle,
   createTestUser,
   cleanup,
+  markStartingPoint,
   PREFIX,
 } = require('./helpers/liveProject');
 
@@ -34,6 +35,11 @@ if (!isConfigured) {
 describe('supabase repository (live)', () => {
   const db = isConfigured ? adminClient() : null;
   const repo = isConfigured ? repository() : null;
+
+  test.before(async () => {
+    // Record where the attempts table stood, so teardown can find rows this run orphaned.
+    await markStartingPoint(db);
+  });
 
   test.after(async () => {
     const problems = await cleanup(db);

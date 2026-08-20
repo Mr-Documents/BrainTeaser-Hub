@@ -3,7 +3,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { isConfigured, adminClient, authProvider, createTestUser, cleanup } = require('./helpers/liveProject');
+const {
+  isConfigured,
+  adminClient,
+  authProvider,
+  createTestUser,
+  cleanup,
+  markStartingPoint,
+} = require('./helpers/liveProject');
 
 /**
  * The Supabase auth provider, against a real project.
@@ -23,6 +30,11 @@ if (!isConfigured) {
 describe('supabase auth provider (live)', () => {
   const db = isConfigured ? adminClient() : null;
   const auth = isConfigured ? authProvider() : null;
+
+  test.before(async () => {
+    // Record where the attempts table stood, so teardown can find rows this run orphaned.
+    await markStartingPoint(db);
+  });
 
   test.after(async () => {
     const problems = await cleanup(db);
