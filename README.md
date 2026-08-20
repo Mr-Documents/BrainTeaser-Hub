@@ -250,11 +250,26 @@ and audits dependencies.
 
 ## Deploying
 
-Set `NODE_ENV=production`, `ADMIN_TOKEN`, and the Supabase credentials. The server validates its
-config on boot and refuses to start if admin auth is required without a token.
+Full guide: **[DEPLOYING.md](DEPLOYING.md)**.
 
 ```bash
+docker build -t brain-teaser-hub .
+# or, without Docker:
 npm ci --omit=dev && npm run build:css && npm start
 ```
 
-`GET /healthz` is the load-balancer probe; `SIGTERM` drains in-flight requests before exit.
+Two health endpoints, answering different questions - wiring them the wrong way round causes
+restart loops:
+
+| Endpoint   | Question               | Use for         |
+| ---------- | ---------------------- | --------------- |
+| `/healthz` | Is the process alive?  | Liveness probe  |
+| `/readyz`  | Should it get traffic? | Readiness probe |
+
+`/healthz` deliberately checks nothing external, so a database blip cannot make an orchestrator
+kill healthy containers. `/readyz` does check storage, so a struggling instance leaves the
+rotation without being restarted.
+
+The server validates its configuration on boot and **refuses to start** on a missing
+`ADMIN_TOKEN`, a missing `SESSION_SECRET`, or `AUTH_DRIVER=local` in production. `SIGTERM` drains
+in-flight requests before exit; a second signal exits immediately.

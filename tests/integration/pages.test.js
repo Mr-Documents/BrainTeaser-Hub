@@ -113,8 +113,12 @@ test.describe('security headers and infrastructure routes', () => {
   });
 
   test('/healthz answers for a load balancer', async () => {
+    // Asserts the contract a probe depends on, not the exact body - see
+    // tests/integration/operations.test.js for the full liveness/readiness behaviour.
     const { app } = buildTestApp();
-    await request(app).get('/healthz').expect(200, { ok: true, status: 'up' });
+    const res = await request(app).get('/healthz').expect(200);
+    assert.equal(res.body.ok, true);
+    assert.equal(res.body.status, 'up');
   });
 
   test('robots.txt keeps the studio out of search results', async () => {

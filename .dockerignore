@@ -1,0 +1,30 @@
+# Anything not needed to build or run the image. Keeping this tight makes the
+# build context small and, more importantly, keeps secrets out of the image.
+.git
+.github
+node_modules
+coverage
+tests
+data/players.json
+data/attempts.json
+data/puzzles.json
+
+# Generated: the builder stage compiles a fresh one, so the committed copy must
+# not enter the context and risk shadowing it.
+public/css
+
+# Never bake credentials into a layer.
+.env
+.env.*
+!.env.example
+
+*.log
+*.md
+!README.md
+.editorconfig
+.prettierrc.json
+.prettierignore
+eslint.config.js
+nodemon.json
+Dockerfile
+.dockerignore

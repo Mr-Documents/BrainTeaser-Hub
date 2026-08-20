@@ -124,9 +124,69 @@ function createApp(overrides = {}) {
   app.use('/', createAuthRouter({ accountService, session, config, limiters }));
   app.use('/', createPagesRouter({ puzzleService, statsService, adminAuth, config }));
 
-  app.get('/healthz', (req, res) => res.json({ ok: true, status: 'up' }));
+  /**
+   * Liveness: is the process alive and able to answer?
+   *
+   * Deliberately checks nothing external. An orchestrator uses this to decide whether to KILL
+   * the container, so a database blip must never fail it - that would turn a brief storage
+   * outage into a restart loop that makes the outage worse.
+   */
+  app.get('/healthz', (req, res) => {
+    res.json({ ok: true, status: 'up', uptimeSec: Math.round(process.uptime()) });
+  });
+
+  /**
+   * Readiness: should this instance be sent traffic?
+   *
+   * This one does check storage, because an instance that cannot reach its database should be
+   * pulled from the rotation - but not restarted.
+   */
+  app.get('/readyz', async (req, res) => {
+    try {
+      const health = await repository.healthCheck();
+      if (!health.ok) {
+        return res.status(503).json({ ok: false, status: 'not-ready', reason: 'storage unavailable' });
+      }
+      return res.json({ ok: true, status: 'ready', driver: health.driver });
+    } catch (err) {
+      return res.status(503).json({ ok: false, status: 'not-ready', reason: err.message });
+    }
+  });
+
+  const publicOrigin = (req) => (config.site.baseUrl || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+
   app.get('/robots.txt', (req, res) => {
-    res.type('text/plain').send('User-agent: *\nDisallow: /admin\nAllow: /\n');
+    res
+      .type('text/plain')
+      .send(
+        [
+          'User-agent: *',
+          'Disallow: /admin',
+          'Disallow: /profile',
+          'Disallow: /signin',
+          'Disallow: /signup',
+          'Disallow: /auth/',
+          'Allow: /',
+          '',
+          `Sitemap: ${publicOrigin(req)}/sitemap.xml`,
+          '',
+        ].join('\n')
+      );
+  });
+
+  app.get('/sitemap.xml', (req, res) => {
+    // Only pages worth indexing: play surfaces are dynamic, account pages are private.
+    const base = publicOrigin(req);
+    const urls = ['/', '/play', '/daily', '/leaderboard', '/how-it-works']
+      .map((path) => `  <url><loc>${base}${path}</loc><changefreq>daily</changefreq></url>`)
+      .join('\n');
+
+    res
+      .type('application/xml')
+      .send(
+        `<?xml version="1.0" encoding="UTF-8"?>\n` +
+          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+      );
   });
 
   app.use(notFoundHandler());
