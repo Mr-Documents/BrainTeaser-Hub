@@ -8,11 +8,29 @@
 -- Apply after 0001_init.sql. Safe to re-run.
 -- ============================================================================
 
+-- ------------------------------------------------- drop dependents up front
+-- Postgres refuses to drop a table while anything still depends on it, so every
+-- object that 0001 built on top of the old `players` table has to go first:
+--   - record_solve(text, ...)  returns the old players row type
+--   - v_stats_summary          counts from the old players table
+-- Both are recreated further down against the new shape. Doing this before the
+-- table is touched keeps the script re-runnable and avoids needing CASCADE,
+-- which would silently drop whatever else happened to be attached.
+
+drop function if exists public.record_solve(text, integer, integer);
+drop view if exists public.v_stats_summary;
+drop view if exists public.v_leaderboard;
+
 -- ------------------------------------------------------------------- players
 -- The old table was keyed on the submitted username, which anyone could claim.
 -- It is replaced by a table keyed on the authenticated user.
+--
+-- There is deliberately no data migration: a username-keyed score has no
+-- trustworthy owner to carry forward, so the old rows are discarded rather than
+-- attributed to whoever happens to sign up with that name first.
 
-alter table public.players rename to players_legacy;
+drop table if exists public.players_legacy;
+alter table if exists public.players rename to players_legacy;
 
 create table if not exists public.players (
   user_id        uuid primary key references auth.users (id) on delete cascade,
@@ -51,8 +69,6 @@ create index if not exists attempts_user_idx on public.attempts (user_id);
 -- --------------------------------------------------------- atomic solve recording
 -- Replaces the username-keyed version from 0001.
 
-drop function if exists public.record_solve(text, integer, integer);
-
 create or replace function public.record_solve(
   p_user_id      uuid,
   p_display_name text,
@@ -90,7 +106,7 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------- views
--- v_stats_summary counted players; keep it pointing at the new table.
+-- v_stats_summary counted players; rebuild it against the new table.
 
 create or replace view public.v_stats_summary as
   select
@@ -122,3 +138,4 @@ create policy "players can read their own row"
   using (auth.uid() = user_id);
 
 grant select on public.v_leaderboard to anon, authenticated;
+grant select on public.v_stats_summary to anon, authenticated;

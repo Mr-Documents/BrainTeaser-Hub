@@ -92,6 +92,34 @@ jobs:
           curl -sf "http://localhost:3000/api/puzzles/random" | grep -q '"ok":true'
           kill $SERVER_PID
 
+  # Runs only where the secrets exist (i.e. not on a fork's PR), and never blocks the main
+  # verify job. It proves the Supabase driver, the record_solve RPC, the views and the PKCE
+  # handshake actually work against a real Postgres - the one thing the in-memory suite cannot.
+  supabase:
+    name: Live Supabase integration
+    runs-on: ubuntu-latest
+    needs: verify
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run the live suite
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "No Supabase secrets configured - the suite will skip itself."
+          fi
+          npm run test:supabase
+
   audit:
     name: Dependency audit
     runs-on: ubuntu-latest

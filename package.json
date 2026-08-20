@@ -13,16 +13,18 @@
     "build": "npm run build:css",
     "build:css": "sass public/scss/main.scss public/css/main.css --style=compressed --no-source-map",
     "watch:css": "sass --watch public/scss/main.scss public/css/main.css",
-    "test": "node --test --test-concurrency=1 tests/**/*.test.js",
-    "test:watch": "node --test --watch tests/**/*.test.js",
-    "test:coverage": "node --test --experimental-test-coverage --test-concurrency=1 tests/**/*.test.js",
+    "test": "node --test --test-concurrency=1 tests/unit/*.test.js tests/integration/*.test.js",
+    "test:watch": "node --test --watch tests/unit/*.test.js tests/integration/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage --test-concurrency=1 tests/unit/*.test.js tests/integration/*.test.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,json,scss,md}\"",
     "format:check": "prettier --check \"**/*.{js,json,scss,md}\"",
     "db:push": "node scripts/db-push.js",
     "db:seed": "node scripts/seed.js",
-    "verify": "npm run lint && npm run build:css && npm test"
+    "verify": "npm run lint && npm run build:css && npm test",
+    "test:supabase": "node --test --test-concurrency=1 tests/supabase/*.live.test.js",
+    "test:all": "npm run test && npm run test:supabase"
   },
   "keywords": [
     "brain-teaser",

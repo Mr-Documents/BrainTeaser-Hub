@@ -201,17 +201,35 @@ Every response uses one envelope: `{ ok: true, data }` or `{ ok: false, error, c
 
 ## Testing & CI
 
-137 tests across unit and integration, on Node's built-in runner - no Jest, no Vitest, no mocking
-library.
+Two suites, on Node's built-in runner - no Jest, no Vitest, no mocking library.
 
-- **Unit** - scoring maths, answer matching, puzzle selection, validation, streaks, attempt store.
+**`npm test`** - 218 tests, no network, runs anywhere.
+
+- **Unit** - scoring maths, answer matching, puzzle selection, validation, streaks, attempt
+  store, colour contrast, form-control styling.
 - **Integration** - the real Express app over HTTP via supertest: the full play loop, hint
-  sequencing, attempt-token forgery, admin auth and CRUD, page rendering, error shapes and
-  security headers.
+  sequencing, attempt-token forgery, both sign-in flows, the OAuth handshake, admin auth and
+  CRUD, page rendering, error shapes and security headers.
+
+**`npm run test:supabase`** - 42 tests against a real Postgres. This is the suite the others
+cannot replace: it is the only place a wrong column name, a mismatched RPC signature, a broken
+view or a bad PKCE challenge can actually surface. It covers the snake_case mapping, database
+check constraints, the `updated_at` trigger, `record_solve` under concurrent writes, `on delete
+cascade`, the stats views, and that the PKCE challenge Google receives really does derive from
+the verifier we store.
+
+It skips itself when no credentials are configured, so a fresh clone and forked PRs are
+unaffected. Every row it creates carries a per-run prefix and is deleted in teardown, so it is
+safe to point at a project with real data in it.
 
 ```bash
-npm test
+npm test              # fast, isolated
+npm run test:supabase # requires .env credentials
+npm run test:all      # both
 ```
+
+`createRepository()` refuses to build a Supabase client while `NODE_ENV=test`, so a test that
+forgets to inject its dependencies fails loudly instead of quietly reading production.
 
 CI (`.github/workflows/ci.yml`) runs lint, format check, an SCSS rebuild with a staleness check,
 catalogue validation and the suite on Node 20 and 22 - then boots the real server and probes it,
