@@ -129,6 +129,16 @@ function validateConfig(cfg = config) {
   if (cfg.isProduction && !cfg.auth.sessionSecret) {
     throw new Error('SESSION_SECRET must be set in production - player sessions cannot be signed without it.');
   }
+  if (cfg.isProduction && !cfg.site.baseUrl) {
+    // Without this, an absolute URL is built from the request's Host header. An attacker can
+    // then request a sign-in link for somebody else's address with a forged Host, and the
+    // victim's single-use token is delivered to the attacker's domain when they click it.
+    // Pinning the origin is the fix; refusing to boot is how we guarantee it is pinned.
+    throw new Error(
+      'PUBLIC_BASE_URL must be set in production. Sign-in links are absolute URLs, and deriving ' +
+        'them from the Host header lets an attacker redirect somebody else’s sign-in token to their own domain.'
+    );
+  }
   if (!cfg.isProduction && cfg.auth.driver === 'local') {
     warnings.push('Auth driver is "local" - sign-in links are printed to this log instead of emailed.');
   }

@@ -91,4 +91,42 @@ async function signIn(app, issuedLinks, email = 'ada@example.com') {
   return { cookie: cookie.split(';')[0], redirectedTo: res.headers.location };
 }
 
-module.exports = { buildTestApp, makePuzzle, signIn };
+/**
+ * An app wired the way production wires it: trust proxy on, secure cookies, rate limiting
+ * enabled, admin auth required.
+ *
+ * These paths never run under `npm test` otherwise, which is exactly why they are worth
+ * covering - a misconfigured proxy or a shared rate-limit key breaks every user at once, and
+ * only on the deployed site.
+ */
+function buildProductionApp({ puzzles = [makePuzzle()], rateLimit = {}, baseUrl = '' } = {}) {
+  const repository = createJsonRepository({ persist: false, seed: { puzzles } });
+  const issuedLinks = [];
+  const authProvider = createLocalAuthProvider({
+    logger: { warn() {}, info() {} },
+    onLink: (link) => issuedLinks.push(link),
+  });
+
+  const productionConfig = {
+    ...config,
+    env: 'production',
+    isProduction: true,
+    logLevel: 'silent',
+    auth: { ...config.auth, driver: 'local', sessionSecret: 'production-session-secret' },
+    admin: { ...config.admin, required: true, token: 'production-admin-token' },
+    rateLimit: { ...config.rateLimit, enabled: true, windowMs: 60_000, apiMax: 1000, submitMax: 5, ...rateLimit },
+    data: { ...config.data, driver: 'memory' },
+    site: { ...config.site, baseUrl },
+  };
+
+  const app = createApp({
+    config: productionConfig,
+    repository,
+    authProvider,
+    logger: createLogger({ level: 'silent' }),
+  });
+
+  return { app, repository, authProvider, issuedLinks, config: productionConfig };
+}
+
+module.exports = { buildTestApp, buildProductionApp, makePuzzle, signIn };

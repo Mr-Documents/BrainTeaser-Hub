@@ -34,6 +34,11 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # ADM
 | `ADMIN_TOKEN`               | Without it the server refuses to boot                     |
 | `PUBLIC_BASE_URL`           | Canonical origin, e.g. `https://brainteasers.example.com` |
 
+`PUBLIC_BASE_URL` is a security requirement, not a nicety. Sign-in links are absolute URLs; if
+the origin were derived from the request's `Host` header, an attacker could request a link for
+somebody else's address with a forged `Host` and receive their single-use token when the victim
+clicks the email. The server refuses to boot in production without it.
+
 Optional: `OAUTH_PROVIDERS=google` (must also be enabled in Supabase → Authentication →
 Providers), `LOG_LEVEL`, `SHUTDOWN_GRACE_MS`, `RELEASE`.
 
