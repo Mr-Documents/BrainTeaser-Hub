@@ -350,6 +350,11 @@
       dom.input.focus({ preventScroll: true });
     } catch (error) {
       dom.hintBtn.disabled = false;
+      if (error.code === 'attempt_expired') {
+        toast('That took a while - reopening the puzzle.', 'info');
+        await recoverExpiredSession(dom.input.value);
+        return;
+      }
       toast(error.message, 'error');
     }
   }
@@ -417,9 +422,37 @@
 
       dom.nextBtn.focus({ preventScroll: true });
     } catch (error) {
+      // A sleeping host (or a deploy) drops the server-side play session. That is our fault,
+      // not the player's, so recover it: reload the same puzzle and let them answer again
+      // rather than dead-ending them on an error they cannot act on.
+      if (error.code === 'attempt_expired' && state.puzzle) {
+        await recoverExpiredSession(answer);
+        return;
+      }
       setFeedback(error.message, 'error');
     } finally {
       dom.submit.disabled = state.solved;
+    }
+  }
+
+  /**
+   * Re-open the current puzzle after its session was lost, restoring what the player typed.
+   * Any hints they had already taken are gone with the session, so this is generous by
+   * accident - which is the right direction for an error they did not cause.
+   */
+  async function recoverExpiredSession(answer) {
+    const id = state.puzzle.id;
+    try {
+      const session = await api(`/api/puzzles/${encodeURIComponent(id)}`);
+      state.attemptToken = session.attemptToken;
+      state.solved = false;
+      dom.input.value = answer;
+      dom.input.disabled = false;
+      dom.submit.disabled = false;
+      setFeedback('That took a while - we reopened the puzzle. Submit again.', null);
+      dom.input.focus({ preventScroll: true });
+    } catch {
+      setFeedback('Your session expired. Load a new puzzle to carry on.', 'error');
     }
   }
 

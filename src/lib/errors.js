@@ -36,6 +36,19 @@ class ConflictError extends AppError {
   }
 }
 
+/**
+ * The play session behind an attempt token is gone - expired, evicted, or lost because the
+ * process restarted (which on a sleeping free-tier host is routine).
+ *
+ * It gets its own code because the client can genuinely recover from it: reload the same puzzle
+ * and let the player answer again. Every other 400 means "you sent something wrong".
+ */
+class AttemptExpiredError extends AppError {
+  constructor(message = 'Your play session for this puzzle expired - load it again') {
+    super(message, 400, 'attempt_expired');
+  }
+}
+
 class ValidationError extends AppError {
   /** @param {Array<{path: string, message: string}>} issues */
   constructor(issues, message = 'Validation failed') {
@@ -46,6 +59,7 @@ class ValidationError extends AppError {
 
 module.exports = {
   AppError,
+  AttemptExpiredError,
   BadRequestError,
   UnauthorizedError,
   NotFoundError,

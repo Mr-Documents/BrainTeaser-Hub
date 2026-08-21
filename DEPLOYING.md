@@ -105,17 +105,25 @@ lives under `%LOCALAPPDATA%/Programs/DockerDesktop/resources/bin`.
 Render is the recommended host for this app: it runs the Dockerfile as a persistent process and
 redeploys on every push to `main`, with no CLI and no CI wiring.
 
-**Use the Starter plan, not Free.** The free plan sleeps after 15 minutes of inactivity, which
-both wipes in-flight play sessions (hint counts and timers live in process memory) and adds a
-~50 second cold start for the next visitor.
+### On the free plan
+
+Free sleeps after 15 minutes of inactivity. Two consequences, one of which is handled:
+
+- **~50 second cold start** for the next visitor after a sleep. Inherent to the plan - the only
+  fix is upgrading to Starter ($7/mo).
+- **In-flight play sessions are dropped**, because hint counts and timers live in process
+  memory. **Handled**: the client detects the `attempt_expired` response, silently reopens the
+  same puzzle and restores what the player had typed, so the worst case is one extra click
+  rather than a dead end.
+
+Upgrade to `starter` when the cold start starts costing you visitors.
 
 ### Option A - the dashboard (simplest)
 
 1. **New → Web Service**, connect the repository.
 2. **Runtime: Docker.** Render detects the `Dockerfile`; leave the build and start commands empty.
-3. **Plan: Starter.**
-4. **Health Check Path: `/healthz`.**
-5. Add the environment variables below, then **Create Web Service**.
+3. **Health Check Path: `/healthz`.**
+4. Add the environment variables below, then **Create Web Service**.
 
 | Variable                    | Value                                             |
 | --------------------------- | ------------------------------------------------- |

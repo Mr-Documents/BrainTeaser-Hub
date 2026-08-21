@@ -13,8 +13,12 @@ services:
     name: brain-teaser-hub
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: starter # NOT free: the free plan sleeps after 15 minutes, which wipes
-      # in-flight play sessions and adds a ~50s cold start.
+    # Free sleeps after 15 minutes of inactivity, which costs a ~50s cold start
+    # for the next visitor and drops in-flight play sessions (hint counts and
+    # timers live in process memory). The client recovers from the latter by
+    # reloading the same puzzle; the cold start is inherent to the free plan.
+    # Upgrade to `starter` when either becomes a real problem.
+    plan: free
     region: frankfurt # Change to the region nearest your players.
     autoDeploy: true
 

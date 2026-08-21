@@ -4,7 +4,7 @@ const { matchAnswer } = require('../domain/answerMatcher');
 const { computeScore } = require('../domain/scoring');
 const { nextStreak } = require('../domain/streak');
 const { toPublicPuzzle } = require('../domain/puzzleSchema');
-const { BadRequestError, NotFoundError } = require('../lib/errors');
+const { AttemptExpiredError, BadRequestError, NotFoundError } = require('../lib/errors');
 
 const MAX_USERNAME_LENGTH = 32;
 
@@ -58,7 +58,7 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
       const hint = attemptStore.takeNextHint(attemptToken, puzzleId, hints);
       if (!hint) {
         const attempt = attemptStore.get(attemptToken, puzzleId);
-        if (!attempt) throw new BadRequestError('Your session for this puzzle expired - load it again');
+        if (!attempt) throw new AttemptExpiredError();
         throw new BadRequestError('No hints left for this puzzle');
       }
       return { hint: hint.text, step: hint.step, total: hint.total, remaining: hint.total - hint.step };
@@ -77,7 +77,7 @@ function createGameService({ repository, puzzleService, attemptStore, logger = c
 
       const attempt = attemptStore.get(attemptToken, puzzleId);
       if (!attempt) {
-        throw new BadRequestError('Your session for this puzzle expired - load the puzzle again');
+        throw new AttemptExpiredError();
       }
 
       // `player` is the session's account or null. A name can no longer be claimed in the body,

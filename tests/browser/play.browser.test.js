@@ -25,10 +25,20 @@ async function openPlay(app, { cookie = '', url = '/play' } = {}) {
   return page;
 }
 
+/**
+ * Submit an answer and wait for the outcome to land.
+ *
+ * Waits on the resulting state rather than a fixed sleep - a timing-based helper passes alone
+ * and fails once the file has enough tests to slow a round trip down.
+ */
 const submit = async (page, answer) => {
+  const before = page.text('#feedback');
   page.$id('answer-input').value = answer;
   page.$id('answer-form').dispatchEvent(new page.window.Event('submit', { bubbles: true, cancelable: true }));
-  await page.settle(80);
+
+  await waitFor(() => page.text('#feedback') && page.text('#feedback') !== before, {
+    label: `a verdict for ${JSON.stringify(answer)}`,
+  });
 };
 
 test.describe('loading a puzzle', () => {
@@ -203,6 +213,59 @@ test.describe('hints', () => {
     const points = Number(page.text('#session-points').replace(/\D/g, ''));
     assert.ok(points > 0, 'still worth something');
     assert.ok(points < 125, `a hinted solve must cost points, scored ${points}`);
+  });
+});
+
+test.describe('recovering a lost play session', () => {
+  test('a restarted server reopens the puzzle instead of dead-ending the player', async (t) => {
+    // On a sleeping free-tier host this is routine, not exotic: the process restarts and every
+    // in-memory attempt token goes with it.
+    const { app } = buildTestApp();
+    const page = await openPlay(app);
+    t.after(() => page.close());
+
+    const question = page.text('#puzzle-question');
+    app.locals.container.attemptStore.clear();
+
+    page.$id('answer-input').value = 'piano';
+    page.$id('answer-form').dispatchEvent(new page.window.Event('submit', { bubbles: true, cancelable: true }));
+
+    await waitFor(() => page.text('#feedback')?.includes('reopened'), {
+      label: 'the recovery message',
+    });
+
+    assert.equal(page.text('#puzzle-question'), question, 'the same puzzle stays on screen');
+    assert.equal(page.$id('answer-input').value, 'piano', 'and what they typed is preserved');
+    assert.equal(page.$id('answer-input').disabled, false);
+  });
+
+  test('resubmitting after the recovery scores normally', async (t) => {
+    const { app } = buildTestApp();
+    const page = await openPlay(app);
+    t.after(() => page.close());
+
+    app.locals.container.attemptStore.clear();
+
+    await submit(page, 'piano');
+    await waitFor(() => page.text('#feedback')?.includes('reopened'), { label: 'the recovery' });
+
+    await submit(page, 'piano');
+    await waitFor(() => page.$id('puzzle-card').classList.contains('is-correct'), {
+      label: 'the solve to land',
+    });
+    assert.match(page.text('#feedback'), /Correct/);
+  });
+
+  test('a lost session while taking a hint recovers too', async (t) => {
+    const { app } = buildTestApp();
+    const page = await openPlay(app);
+    t.after(() => page.close());
+
+    app.locals.container.attemptStore.clear();
+    page.$id('btn-hint').click();
+
+    await waitFor(() => page.text('#feedback')?.includes('reopened'), { label: 'the recovery' });
+    assert.equal(page.$id('puzzle-body').hidden, false, 'the puzzle is still playable');
   });
 });
 
